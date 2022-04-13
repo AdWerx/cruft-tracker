@@ -1,7 +1,7 @@
 module CruftTracker
   module ApplicationHelper
-    def foo
-      puts ">>>> foo!!!"
+    def is_this_view_used?
+      puts ">>>> is_this_view_used?"
     end
   end
 end
