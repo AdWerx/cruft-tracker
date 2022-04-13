@@ -60,6 +60,9 @@ bundle exec appraisal rails-5.2 rails c
 
 # run a rake task with rails-6.0
 bundle exec appraisal rails-6.0 rake <some task>
+
+# run tests
+bundle exec appraisal rails-6.1 rspec spec
 ```
 
 ### Running the dummy app
@@ -74,6 +77,12 @@ docker attach cruft_tracker_ruby_1
 ```
 
 The `RAILS_VERSION` environment variable is required. Options are: 5.2, 6.0, or 6.1. This will run the application on port 3000 and it can be accessed in your browser at http://localhost:3000. You should be able to use `binding.pry` for debugging.
+
+### Running tests
+
+Tests can be run from a Docker bash console like this:
+
+
 
 ## Contributing
 
