@@ -1,0 +1,40 @@
+version: '3'
+services:
+  mysql:
+    image: mysql:8
+    command: --default-authentication-plugin=mysql_native_password
+    volumes:
+      - db_data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: dev
+      MYSQL_DATABASE: cruft_tracker_test
+    ports:
+      - "13306:3306"
+
+  ruby:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    depends_on:
+      - mysql
+    working_dir: /app
+    volumes:
+      - .:/app
+      - bundle:/bundle
+      - ./wait-for-it.sh:/usr/sbin/wait-for-it.sh:ro
+    environment:
+      - CRUFT_TRACKER_DB_HOST=mysql
+      - CRUFT_TRACKER_DB_PORT=3306
+      - CRUFT_TRACKER_DB_USER=root
+      - CRUFT_TRACKER_DB_PASSWORD=dev
+    links:
+      - mysql
+    tty: true
+    stdin_open: true
+    ports:
+      - "3000:3000"
+
+volumes:
+  db_data:
+  bundle:
+
