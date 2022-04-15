@@ -13,13 +13,21 @@ gem 'cruft_tracker'
 
 And then execute:
 ```bash
-$ bundle
+bundle
 ```
 
 Or install it yourself as:
 ```bash
-$ gem install cruft_tracker
+gem install cruft_tracker
 ```
+
+You'll need to create the migrations to add the required tables to your database:
+
+```bash
+bin/rails cruft_tracker:install:migrations
+```
+
+After that, you can run migrations as you normally would.
 
 ## Developing
 

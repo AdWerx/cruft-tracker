@@ -8,7 +8,7 @@ module CruftTracker
     puts '>>>> is this view used?'
   end
 
-  def is_this_method_used?
-    # foo
+  def self.is_this_method_used?(owner, method_name)
+    CruftTracker::TrackMethod.run!(owner: owner, method_name: method_name)
   end
 end

@@ -11,13 +11,16 @@
 #
 #
 appraise "rails-5.2" do
+  gem 'active_interaction', '~> 4.1.0'
   gem "rails", "~> 5.2.4"
 end
 
 appraise "rails-6.0" do
+  gem 'active_interaction', '~> 4.1.0'
   gem "rails", "~> 6.0.3"
 end
 
 appraise "rails-6.1" do
+  gem 'active_interaction', '~> 4.1.0'
   gem "rails", "~> 6.1.0"
 end
