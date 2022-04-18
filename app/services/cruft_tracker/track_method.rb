@@ -46,7 +46,7 @@ module CruftTracker
     end
 
     def create_or_find_method_record
-      CruftTracker::Method.find_or_create_by(
+      CruftTracker::Method.create(
         owner: owner.name,
         name: name,
         method_type: method_type

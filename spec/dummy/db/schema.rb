@@ -15,14 +15,14 @@ ActiveRecord::Schema.define(version: 2022_04_18_133030) do
   create_table "cruft_tracker_backtraces", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb3", force: :cascade do |t|
     t.string "traceable_type", null: false
     t.bigint "traceable_id", null: false
-    t.string "hash", null: false
+    t.string "trace_hash", null: false
     t.json "trace", null: false
     t.integer "occurrences", default: 0, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["hash"], name: "index_cruft_tracker_backtraces_on_hash"
     t.index ["occurrences"], name: "index_cruft_tracker_backtraces_on_occurrences"
-    t.index ["traceable_id", "hash"], name: "index_pcbt_on_traceable_id_and_hash", unique: true
+    t.index ["trace_hash"], name: "index_cruft_tracker_backtraces_on_trace_hash"
+    t.index ["traceable_id", "trace_hash"], name: "index_pcbt_on_traceable_id_and_trace_hash", unique: true
     t.index ["traceable_type", "traceable_id"], name: "index_pcbt_on_traceable_id_and_type"
   end
 

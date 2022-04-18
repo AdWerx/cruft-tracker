@@ -115,6 +115,47 @@ RSpec.describe(CruftTracker) do
     end
 
     it 'records distinct stack traces for method invocations' do
+      expect do
+        load './spec/dummy/app/models/class_with_multiple_backtraces_to_the_same_tracked_method.rb'
+      end.to change { CruftTracker::Method.count }.by(1)
+
+      test_class = ClassWithMultipleBacktracesToTheSameTrackedMethod.new
+      test_class.kick_off_the_thing_to_do_twice
+      test_class.kick_off_the_thing_to_do
+
+      expect(CruftTracker::Backtrace.count).to eq(2)
+      backtrace1 = CruftTracker::Backtrace.first
+      method_stack1 = backtrace1.trace.take(5).map { |frame| frame['label'] }
+      expect(method_stack1).to eq(
+        [
+          'do_the_thing',
+          'kick_off_the_thing_to_do',
+          'block in kick_off_the_thing_to_do_twice',
+          'times',
+          'kick_off_the_thing_to_do_twice'
+        ]
+      )
+      expect(backtrace1.occurrences).to eq(2)
+      backtrace2 = CruftTracker::Backtrace.second
+      method_stack2 = backtrace2.trace.take(2).map { |frame| frame['label'] }
+      expect(method_stack2).to eq(%w[do_the_thing kick_off_the_thing_to_do])
+      expect(backtrace2.occurrences).to eq(1)
+    end
+
+    it 'tracks private instance methods' do
+      fail
+    end
+
+    it 'tracks protected instance methods' do
+      fail
+    end
+
+    it 'tracks private instance methods' do
+      fail
+    end
+
+    it 'tracks private class methods' do
+      # As in via the eigenclass
       fail
     end
   end
