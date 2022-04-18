@@ -8,24 +8,22 @@ module CruftTracker
     private
 
     object :owner, class: Module
-    symbol :method_name
+    symbol :name
     symbol :method_type, default: -> { determine_method_type }
 
     def execute
-      ensure_method_record_exists
-      wrap_target_method(method_type, target_method)
+      wrap_target_method(
+        method_type,
+        target_method,
+        create_or_find_method_record
+      )
     end
 
-    def ensure_method_record_exists
-      method_record
-    end
-
-    def method_record
-      @method_record ||= create_or_find_method_record
-    end
-
-    def wrap_target_method(method_type, target_method)
+    def wrap_target_method(method_type, target_method, method_record)
       target_method.owner.define_method target_method.name do |*args|
+        CruftTracker::RecordInvocation.run!(method: method_record)
+        CruftTracker::RecordBacktrace.run!(method: method_record)
+
         # IsThisUsed::Util::LogSuppressor.suppress_logging do
         #   CruftTracker::Recorder.record_invocation(potential_cruft)
         #   if track_arguments
@@ -39,7 +37,6 @@ module CruftTracker
         #     CruftTracker::Recorder.record_arguments(potential_cruft, arguments)
         #   end
         # end
-        puts '>>>> in wrapper'
         if method_type == INSTANCE_METHOD
           target_method.bind(self).call(*args)
         else
@@ -50,14 +47,14 @@ module CruftTracker
 
     def create_or_find_method_record
       CruftTracker::Method.find_or_create_by(
-        owner_name: owner,
-        method_name: method_name,
+        owner: owner.name,
+        name: name,
         method_type: method_type
       )
     rescue ActiveRecord::RecordNotUnique
       CruftTracker::Method.find_by(
-        owner_name: owner,
-        method_name: method_name,
+        owner: owner.name,
+        name: name,
         method_type: method_type
       )
     end
@@ -65,24 +62,24 @@ module CruftTracker
     def target_method
       case method_type
       when INSTANCE_METHOD
-        owner.instance_method(method_name)
+        owner.instance_method(name)
       when CLASS_METHOD
-        owner.method(method_name)
+        owner.method(name)
       end
     end
 
     def determine_method_type
-      is_instance_method = all_instance_methods.include?(method_name)
-      is_class_method = all_class_methods.include?(method_name)
+      is_instance_method = all_instance_methods.include?(name)
+      is_class_method = all_class_methods.include?(name)
 
       if is_instance_method && is_class_method
-        raise AmbiguousMethodType.new(owner.name, method_name)
+        raise AmbiguousMethodType.new(owner.name, name)
       elsif is_instance_method
         INSTANCE_METHOD
       elsif is_class_method
         CLASS_METHOD
       else
-        raise NoSuchMethod.new(owner.name, method_name)
+        raise NoSuchMethod.new(owner.name, name)
       end
     end
 
@@ -95,20 +92,20 @@ module CruftTracker
     end
 
     class AmbiguousMethodType < StandardError
-      def initialize(owner_name, ambiguous_method_name)
+      def initialize(owner_name, ambiguous_name)
         super(
           "#{owner_name} has instance and class methods named '#{
-            ambiguous_method_name
+            ambiguous_name
           }'. Please specify the correct type."
         )
       end
     end
 
     class NoSuchMethod < StandardError
-      def initialize(owner_name, missing_method_name)
+      def initialize(owner_name, missing_name)
         super(
           "#{owner_name} does not have an instance or class method named '#{
-            missing_method_name
+            missing_name
           }'."
         )
       end

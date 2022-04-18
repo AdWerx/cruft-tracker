@@ -10,20 +10,34 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2022_04_14_134857) do
+ActiveRecord::Schema.define(version: 2022_04_18_133030) do
+
+  create_table "cruft_tracker_backtraces", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb3", force: :cascade do |t|
+    t.string "traceable_type", null: false
+    t.bigint "traceable_id", null: false
+    t.string "hash", null: false
+    t.json "trace", null: false
+    t.integer "occurrences", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["hash"], name: "index_cruft_tracker_backtraces_on_hash"
+    t.index ["occurrences"], name: "index_cruft_tracker_backtraces_on_occurrences"
+    t.index ["traceable_id", "hash"], name: "index_pcbt_on_traceable_id_and_hash", unique: true
+    t.index ["traceable_type", "traceable_id"], name: "index_pcbt_on_traceable_id_and_type"
+  end
 
   create_table "cruft_tracker_methods", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb3", force: :cascade do |t|
-    t.string "owner_name", null: false
-    t.string "method_name", null: false
+    t.string "owner", null: false
+    t.string "name", null: false
     t.string "method_type", null: false
     t.integer "invocations", default: 0, null: false
     t.datetime "deleted_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["method_name"], name: "index_cruft_tracker_methods_on_method_name"
-    t.index ["owner_name", "method_name", "method_type"], name: "index_pc_on_owner_name_and_method_name_and_method_type", unique: true
-    t.index ["owner_name", "method_name"], name: "index_cruft_tracker_methods_on_owner_name_and_method_name"
-    t.index ["owner_name"], name: "index_cruft_tracker_methods_on_owner_name"
+    t.index ["name"], name: "index_cruft_tracker_methods_on_name"
+    t.index ["owner", "name", "method_type"], name: "index_cruft_tracker_methods_on_owner_and_name_and_method_type", unique: true
+    t.index ["owner", "name"], name: "index_cruft_tracker_methods_on_owner_and_name"
+    t.index ["owner"], name: "index_cruft_tracker_methods_on_owner"
   end
 
 end

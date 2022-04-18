@@ -2,6 +2,8 @@
 
 module CruftTracker
   class Method < ActiveRecord::Base
-    # TODO: flesh me out
+    has_many :cruft_tracker_backtraces,
+             class_name: 'CruftTracker::Backtrace',
+             as: :traceable
   end
 end
