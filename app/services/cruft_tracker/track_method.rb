@@ -17,6 +17,21 @@ module CruftTracker
         target_method,
         create_or_find_method_record
       )
+    rescue ActiveRecord::StatementInvalid => e
+      raise unless e.cause.present? && e.cause.instance_of?(Mysql2::Error)
+
+      Rails.logger.warn(
+        'CruftTracker was unable to record a method. Does the cruft_tracker_methods table exist? Have migrations been run?'
+      )
+    rescue NoMethodError
+      Rails.logger.warn(
+        'CruftTracker was unable to record a method. Have migrations been run?'
+      )
+    rescue Mysql2::Error::ConnectionError,
+           ActiveRecord::ConnectionNotEstablished
+      Rails.logger.warn(
+        'CruftTracker was unable to record a method due to being unable to connect to the database. This may be a non-issue in cases where the database is intentionally not available.'
+      )
     end
 
     def wrap_target_method(method_type, target_method, method_record)

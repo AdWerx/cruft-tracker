@@ -2,6 +2,21 @@ require 'rails_helper'
 
 RSpec.describe(CruftTracker) do
   describe '.is_this_method_used?' do
+    it 'creates method records before methods are invoked' do
+      expect do
+        load './spec/dummy/app/models/class_with_tagged_instance_method.rb'
+      end.to change { CruftTracker::Method.count }.by(1)
+
+      method = CruftTracker::Method.first
+      expect(method.owner).to eq('ClassWithTaggedInstanceMethod')
+      expect(method.name).to eq('some_instance_method')
+      expect(method.method_type).to eq(
+        CruftTracker::TrackMethod::INSTANCE_METHOD.to_s
+      )
+      expect(method.invocations).to eq(0)
+      expect(method.deleted_at).to eq(nil)
+    end
+
     it 'overrides instance methods on classes that tag methods with is_this_method_used?' do
       expect do
         load './spec/dummy/app/models/class_with_tagged_instance_method.rb'
@@ -143,20 +158,166 @@ RSpec.describe(CruftTracker) do
     end
 
     it 'tracks private instance methods' do
-      fail
+      expect do
+        load './spec/dummy/app/models/class_with_private_instance_method.rb'
+      end.to change { CruftTracker::Method.count }.by(1)
+
+      ClassWithPrivateInstanceMethod.new.do_something
+
+      method = CruftTracker::Method.first
+      expect(method.owner).to eq(ClassWithPrivateInstanceMethod.name)
+      expect(method.name).to eq('some_private_method')
+      expect(method.invocations).to eq(1)
     end
 
     it 'tracks protected instance methods' do
-      fail
+      expect do
+        load './spec/dummy/app/models/class_with_protected_instance_method.rb'
+      end.to change { CruftTracker::Method.count }.by(1)
+
+      ClassWithProtectedInstanceMethod.new.do_something
+
+      method = CruftTracker::Method.first
+      expect(method.owner).to eq(ClassWithProtectedInstanceMethod.name)
+      expect(method.name).to eq('some_protected_method')
+      expect(method.invocations).to eq(1)
     end
 
-    it 'tracks private instance methods' do
-      fail
+    it 'tracks private eigenclass methods' do
+      expect do
+        load './spec/dummy/app/models/class_with_private_eigenclass_method.rb'
+      end.to change { CruftTracker::Method.count }.by(1)
+
+      ClassWithPrivateEigenclassMethod.do_it
+
+      method = CruftTracker::Method.first
+      expect(method.owner).to eq(ClassWithPrivateEigenclassMethod.name)
+      expect(method.name).to eq('super_private_class_method')
+      expect(method.method_type).to eq(
+        CruftTracker::TrackMethod::CLASS_METHOD.to_s
+      )
+      expect(method.invocations).to eq(1)
     end
 
     it 'tracks private class methods' do
-      # As in via the eigenclass
-      fail
+      expect do
+        load './spec/dummy/app/models/class_with_private_class_method.rb'
+      end.to change { CruftTracker::Method.count }.by(1)
+
+      ClassWithPrivateClassMethod.do_the_sneaky_thing
+
+      method = CruftTracker::Method.first
+      expect(method.owner).to eq(ClassWithPrivateClassMethod.name)
+      expect(method.name).to eq('be_sneaky')
+      expect(method.method_type).to eq(
+        CruftTracker::TrackMethod::CLASS_METHOD.to_s
+      )
+      expect(method.invocations).to eq(1)
+    end
+
+    it 'does not create multiple of the same cruft record in a race condition' do
+      starting_pistol_has_been_fired = false
+
+      threads =
+        10.times.map do
+          Thread.new do
+            true while !starting_pistol_has_been_fired
+            Class.new do
+              def self.name
+                'SomeClassName'
+              end
+
+              def foo; end
+              CruftTracker.is_this_method_used? self, :foo
+            end
+          end
+        end
+      starting_pistol_has_been_fired = true
+      threads.each(&:join)
+
+      methods =
+        CruftTracker::Method.where(
+          owner: 'SomeClassName',
+          name: 'foo',
+          method_type: CruftTracker::TrackMethod::INSTANCE_METHOD
+        )
+      expect(methods.count).to eq(1)
+    end
+
+    it 'does not create multiple of the same stack record in a race condition' do
+      starting_pistol_has_been_fired = false
+      load './spec/dummy/app/models/class_with_tagged_instance_method.rb'
+
+      threads =
+        10.times.map do
+          Thread.new do
+            true while !starting_pistol_has_been_fired
+            ClassWithTaggedInstanceMethod.new.some_instance_method
+          end
+        end
+      starting_pistol_has_been_fired = true
+      threads.each(&:join)
+
+      expect(CruftTracker::Backtrace.count).to eq(1)
+
+      # I'm not asserting the exact number of occurrences because we still have a race condition
+      # related to having loaded multiple instances of PotentialCruftStack in memory and I don't want
+      # to have to jump through a zillion hoops to have exactly correct counts. It's not worth the
+      # effort and the impact is low. We could conceivably lose a few occurrence increments, but who
+      # cares?
+      expect(CruftTracker::Backtrace.first.occurrences).to be > 1
+    end
+
+    it 'tracks the method itself, not overrides or super methods' do
+      expect do
+        load './spec/dummy/app/models/class_with_untracked_method.rb'
+        load './spec/dummy/app/models/subclass_with_tracked_method.rb'
+        load './spec/dummy/app/models/sub_subclass_with_untracked_method.rb'
+        load './spec/dummy/app/models/sub_subclass_with_untracked_method_that_calls_tracked_super_method.rb'
+      end.to change { CruftTracker::Method.count }.by(1)
+
+      method = CruftTracker::Method.first
+
+      ClassWithUntrackedMethod.new.hello
+      expect(CruftTracker::Method.count).to eq(1)
+      expect(method.reload.invocations).to eq(0)
+
+      SubclassWithTrackedMethod.new('Zed').hello
+      expect(CruftTracker::Method.count).to eq(1)
+      expect(method.reload.invocations).to eq(1)
+
+      SubSubclassWithUntrackedMethod.new('matilda').hello
+      expect(CruftTracker::Method.count).to eq(1)
+      expect(method.reload.invocations).to eq(1)
+
+      SubSubclassWithUntrackedMethodThatCallsTrackedSuperMethod.new('Clair')
+        .hello
+      expect(CruftTracker::Method.count).to eq(1)
+      expect(method.reload.invocations).to eq(2)
+    end
+
+    context 'when the cruft_tracker_methods table does not exist' do
+      after do
+        ActiveRecord::Base.connection.execute(
+          'RENAME TABLE tmp_cruft_tracker_methods TO cruft_tracker_methods'
+        )
+      end
+
+      it 'prints a warning message' do
+        ActiveRecord::Base.connection.execute(
+          'RENAME TABLE cruft_tracker_methods TO tmp_cruft_tracker_methods'
+        )
+
+        # Note using Zeitwerk with `load` as I am causes the class to be loaded twice. That's no big
+        # deal, really. But that's why I'm asserting that we receive warn at least once.
+        expect(Rails.logger).to receive(:warn)
+          .with(
+            'CruftTracker was unable to record a method. Does the cruft_tracker_methods table exist? Have migrations been run?'
+          )
+          .at_least(:once)
+
+        load './spec/dummy/app/models/class_with_tagged_instance_method.rb'
+      end
     end
   end
 end
