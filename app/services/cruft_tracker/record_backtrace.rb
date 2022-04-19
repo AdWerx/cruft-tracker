@@ -8,7 +8,10 @@ module CruftTracker
     private
 
     def execute
-      backtrace_record.update(occurrences: backtrace_record.occurrences + 1)
+      backtrace_record.with_lock do
+        backtrace_record.reload
+        backtrace_record.update(occurrences: backtrace_record.occurrences + 1)
+      end
     end
 
     def backtrace_record

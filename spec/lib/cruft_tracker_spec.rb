@@ -139,7 +139,8 @@ RSpec.describe(CruftTracker) do
       test_class.kick_off_the_thing_to_do
 
       expect(CruftTracker::Backtrace.count).to eq(2)
-      backtrace1 = CruftTracker::Backtrace.first
+      method = CruftTracker::Method.first
+      backtrace1 = method.backtraces.first
       method_stack1 = backtrace1.trace.take(5).map { |frame| frame['label'] }
       expect(method_stack1).to eq(
         [
@@ -151,7 +152,7 @@ RSpec.describe(CruftTracker) do
         ]
       )
       expect(backtrace1.occurrences).to eq(2)
-      backtrace2 = CruftTracker::Backtrace.second
+      backtrace2 = method.backtraces.second
       method_stack2 = backtrace2.trace.take(2).map { |frame| frame['label'] }
       expect(method_stack2).to eq(%w[do_the_thing kick_off_the_thing_to_do])
       expect(backtrace2.occurrences).to eq(1)
@@ -318,6 +319,122 @@ RSpec.describe(CruftTracker) do
 
         load './spec/dummy/app/models/class_with_tagged_instance_method.rb'
       end
+    end
+
+    context 'with a comment' do
+      context 'when the comment is text' do
+        it 'writes text' do
+          load './spec/dummy/app/models/class_with_textual_comment.rb'
+
+          method = CruftTracker::Method.first
+
+          expect(method.comment).to eq('Tracking is fun!')
+        end
+      end
+
+      context 'when the comment is serializable to json' do
+        it 'writes json' do
+          load './spec/dummy/app/models/class_with_hash_comment.rb'
+
+          method = CruftTracker::Method.first
+
+          expect(method.comment).to eq('foo' => true, 'bar' => [1, 'two'])
+        end
+      end
+
+      context 'when a comment is changed or provided after the initial cruft_tracker_methods record is created' do
+        it 'updates the comment' do
+          method =
+            CruftTracker::Method.create(
+              owner: 'ClassWithTextualComment',
+              name: 'some_method',
+              method_type: CruftTracker::TrackMethod::INSTANCE_METHOD,
+              comment: 'Some old comment'
+            )
+
+          load './spec/dummy/app/models/class_with_textual_comment.rb'
+
+          expect(method.reload.comment).to eq('Tracking is fun!')
+        end
+      end
+    end
+
+    context 'when track_arguments is not provided' do
+      it 'does not track arguments' do
+        expect do
+          load './spec/dummy/app/models/class_with_method_that_accepts_untracked_arguments.rb'
+        end.to change { CruftTracker::Method.count }.by(1)
+
+        ClassWithMethodThatAcceptsUntrackedArguments.new.describe_thing(
+          'red',
+          123
+        )
+
+        method = CruftTracker::Method.first
+
+        expect(method.invocations).to eq(1)
+        expect(method.arguments.length).to eq(0)
+      end
+    end
+
+    context 'when track_arguments is a lambda' do
+      it 'tracks distinct transformed arguments provided to the method' do
+        load './spec/dummy/app/models/class_with_method_that_accepts_tracked_arguments.rb'
+
+        example = ClassWithMethodThatAcceptsTrackedArguments.new
+        example.do_something(
+          1,
+          'blargh',
+          true,
+          [2, 'baz', false],
+          [{ a: 1, b: 'bar' }, { a: 2, b: 'foo' }],
+          x: 213,
+          z: 'whatever',
+          y: true
+        )
+        example.do_something(
+          2,
+          'kapow!',
+          true,
+          [2, 'baz', false],
+          [{ a: 1, b: 'bar' }, { a: 2, b: 'foo' }],
+          x: 213,
+          z: 'whatever',
+          y: true
+        )
+        example.do_something(
+          2,
+          'zappo?',
+          true,
+          [2, 'baz', false],
+          [{ a: 1, b: 'bar' }, { a: 2, b: 'foo' }],
+          x: 213,
+          z: 'whatever',
+          y: true
+        )
+
+        expect(CruftTracker::Method.count).to eq(1)
+        method = CruftTracker::Method.first
+        expect(method.arguments.count).to eq(1)
+        arguments1 = method.arguments.first
+        expect(arguments1.arguments).to eq(%w[x y z])
+      end
+
+      it 'does not create multiple of the same arguments record in a race condition' do
+        fail
+      end
+
+      context 'when deleted potential cruft records exist, but is_this_used? is used to track the same method' do
+        it 'undeletes the record' do
+          fail
+        end
+      end
+    end
+  end
+
+  describe '#are_any_of_these_methods_used?' do
+    it 'tracks invocations of all class and instance methods in a class' do
+      fail
     end
   end
 end

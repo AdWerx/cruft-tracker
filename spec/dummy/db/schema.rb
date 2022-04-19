@@ -10,7 +10,20 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2022_04_18_133030) do
+ActiveRecord::Schema.define(version: 2022_04_19_174055) do
+
+  create_table "cruft_tracker_arguments", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb3", force: :cascade do |t|
+    t.bigint "method_id", null: false
+    t.string "arguments_hash", null: false
+    t.json "arguments", null: false
+    t.integer "occurrences", default: 0, null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["arguments_hash"], name: "index_cruft_tracker_arguments_on_arguments_hash"
+    t.index ["method_id", "arguments_hash"], name: "index_pca_on_method_id_and_arguments_hash", unique: true
+    t.index ["method_id"], name: "index_cruft_tracker_arguments_on_method_id"
+    t.index ["occurrences"], name: "index_cruft_tracker_arguments_on_occurrences"
+  end
 
   create_table "cruft_tracker_backtraces", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb3", force: :cascade do |t|
     t.string "traceable_type", null: false
@@ -31,6 +44,7 @@ ActiveRecord::Schema.define(version: 2022_04_18_133030) do
     t.string "name", null: false
     t.string "method_type", null: false
     t.integer "invocations", default: 0, null: false
+    t.json "comment"
     t.datetime "deleted_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false

@@ -10,12 +10,18 @@ module CruftTracker
     object :owner, class: Module
     symbol :name
     symbol :method_type, default: -> { determine_method_type }
+    object :comment, class: Object, default: nil
+    object :arguments_transformer, class: Proc, default: nil
 
     def execute
+      method_record = create_or_find_method_record
+      method_record.update(comment: comment) if comment != method_record.comment
+
       wrap_target_method(
         method_type,
         target_method,
-        create_or_find_method_record
+        method_record,
+        arguments_transformer
       )
     rescue ActiveRecord::StatementInvalid => e
       raise unless e.cause.present? && e.cause.instance_of?(Mysql2::Error)
@@ -34,10 +40,22 @@ module CruftTracker
       )
     end
 
-    def wrap_target_method(method_type, target_method, method_record)
+    def wrap_target_method(
+      method_type,
+      target_method,
+      method_record,
+      arguments_transformer
+    )
       target_method.owner.define_method target_method.name do |*args|
         CruftTracker::RecordInvocation.run!(method: method_record)
         CruftTracker::RecordBacktrace.run!(method: method_record)
+        if arguments_transformer.present?
+          CruftTracker::RecordArguments.run!(
+            method: method_record,
+            arguments: args,
+            transformer: arguments_transformer
+          )
+        end
 
         # IsThisUsed::Util::LogSuppressor.suppress_logging do
         #   CruftTracker::Recorder.record_invocation(potential_cruft)
@@ -64,7 +82,8 @@ module CruftTracker
       CruftTracker::Method.create(
         owner: owner.name,
         name: name,
-        method_type: method_type
+        method_type: method_type,
+        comment: comment
       )
     rescue ActiveRecord::RecordNotUnique
       CruftTracker::Method.find_by(

@@ -8,11 +8,19 @@ module CruftTracker
     puts '>>>> is this view used?'
   end
 
-  def self.is_this_method_used?(owner, name, method_type: nil)
+  def self.is_this_method_used?(
+    owner,
+    name,
+    method_type: nil,
+    comment: nil,
+    track_arguments: nil
+  )
     CruftTracker::TrackMethod.run!(
       owner: owner,
       name: name,
-      method_type: method_type
+      method_type: method_type,
+      comment: comment,
+      arguments_transformer: track_arguments
     )
   end
 end
