@@ -61,20 +61,6 @@ module CruftTracker
             transformer: arguments_transformer
           )
         end
-
-        # IsThisUsed::Util::LogSuppressor.suppress_logging do
-        #   CruftTracker::Recorder.record_invocation(potential_cruft)
-        #   if track_arguments
-        #     arguments =
-        #       if track_arguments.instance_of?(Proc)
-        #         track_arguments.call(args)
-        #       else
-        #         args
-        #       end
-        #
-        #     CruftTracker::Recorder.record_arguments(potential_cruft, arguments)
-        #   end
-        # end
         if method_type == INSTANCE_METHOD
           target_method.bind(self).call(*args)
         else

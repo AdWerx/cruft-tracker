@@ -24,4 +24,8 @@ module CruftTracker
       arguments_transformer: track_arguments
     )
   end
+
+  def self.are_any_of_these_methods_being_used?(owner, comment: nil)
+    CruftTracker::TrackAllMethods.run!(owner: owner, comment: comment)
+  end
 end

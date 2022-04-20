@@ -468,18 +468,81 @@ RSpec.describe(CruftTracker) do
           expect(method.reload.deleted_at).to be_nil
         end
       end
-
-      # TODO: this probably doesn't belong here.
-      context 'when no longer tracking a given method' do
-        it 'is marked as deleted' do
-          fail
-        end
-      end
     end
   end
 
   describe '#are_any_of_these_methods_used?' do
-    it 'tracks invocations of all class and instance methods in a class' do
+    it 'tracks all class and instance methods belonging directly to a class' do
+      load './spec/dummy/app/models/class_that_is_tracking_all_methods.rb'
+
+      ClassThatIsTrackingAllMethods.do_the_sneaky_thing
+      ClassThatIsTrackingAllMethods.do_it
+      instance = ClassThatIsTrackingAllMethods.new
+      instance.some_method
+      instance.some_other_method_name
+      instance.kick_off_the_thing_to_do_twice
+      instance.do_something
+      instance.some_attr = 'Jane'
+      instance.hello
+
+      constructor_record = CruftTracker::Method.find_by(name: 'initialize')
+      expect(constructor_record.invocations).to eq(1)
+      ambiguous_methods =
+        CruftTracker::Method.where(name: 'some_ambiguous_method_name')
+      expect(ambiguous_methods.size).to eq(2)
+      expect(
+        CruftTracker::Method.find_by(name: 'do_the_sneaky_thing').invocations
+      ).to eq(1)
+      expect(CruftTracker::Method.find_by(name: 'be_sneaky').invocations).to eq(
+        1
+      )
+      expect(CruftTracker::Method.find_by(name: 'do_it').invocations).to eq(1)
+      expect(
+        CruftTracker::Method.find_by(name: 'super_private_class_method')
+          .invocations
+      ).to eq(1)
+      expect(
+        CruftTracker::Method.find_by(name: 'some_method').invocations
+      ).to eq(1)
+      expect(
+        CruftTracker::Method.find_by(name: 'some_other_method_name').invocations
+      ).to eq(1)
+      expect(
+        CruftTracker::Method.find_by(name: 'describe_thing').invocations
+      ).to eq(0)
+      expect(
+        CruftTracker::Method.find_by(name: 'kick_off_the_thing_to_do_twice')
+          .invocations
+      ).to eq(1)
+      expect(
+        CruftTracker::Method.find_by(name: 'kick_off_the_thing_to_do')
+          .invocations
+      ).to eq(2)
+      expect(
+        CruftTracker::Method.find_by(name: 'do_the_thing').invocations
+      ).to eq(2)
+      expect(
+        CruftTracker::Method.find_by(name: 'do_the_thing').invocations
+      ).to eq(2)
+      expect(
+        CruftTracker::Method.find_by(name: 'do_something').invocations
+      ).to eq(1)
+      expect(
+        CruftTracker::Method.find_by(name: 'some_protected_method').invocations
+      ).to eq(1)
+      expect(CruftTracker::Method.find_by(name: 'hello').invocations).to eq(1)
+      expect(
+        CruftTracker::Method.find_by(name: 'some_attr=').invocations
+      ).to eq(1)
+      expect(CruftTracker::Method.find_by(name: 'some_attr').invocations).to eq(
+        1
+      )
+      expect(
+        CruftTracker::Method.find_by(name: 'another_untracked_method')
+      ).to be_nil
+    end
+
+    it 'tracks invocations of all methods on a module' do
       fail
     end
   end

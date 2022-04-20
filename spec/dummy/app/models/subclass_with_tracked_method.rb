@@ -13,4 +13,8 @@ class SubclassWithTrackedMethod < ClassWithUntrackedMethod
   end
 
   CruftTracker.is_this_method_used? self, :hello
+
+  def i_am_not_to_be_overridden
+    'RAR! Fear me!'
+  end
 end
