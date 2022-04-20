@@ -543,7 +543,26 @@ RSpec.describe(CruftTracker) do
     end
 
     it 'tracks invocations of all methods on a module' do
-      fail
+      load './spec/dummy/app/models/module_that_is_tracking_all_methods.rb'
+
+      ModuleThatIsTrackingAllMethods.some_module_method
+      ModuleThatIsTrackingAllMethods.be_sneaky
+      ModuleThatIsTrackingAllMethods.do_something_super_privately
+
+      expect(CruftTracker::Method.count).to eq(4)
+      expect(
+        CruftTracker::Method.find_by(name: 'some_module_method').invocations
+      ).to eq(1)
+      expect(CruftTracker::Method.find_by(name: 'be_sneaky').invocations).to eq(
+        1
+      )
+      expect(
+        CruftTracker::Method.find_by(name: 'do_something_super_privately')
+          .invocations
+      ).to eq(1)
+      expect(
+        CruftTracker::Method.find_by(name: 'super_private_method').invocations
+      ).to eq(1)
     end
   end
 end

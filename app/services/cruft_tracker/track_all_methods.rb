@@ -3,7 +3,7 @@
 module CruftTracker
   # TODO: test me
   class TrackAllMethods < CruftTracker::ApplicationService
-    object :owner, class: Module
+    object :owner, class: Object
     object :comment, class: Object, default: nil
 
     private
@@ -32,8 +32,21 @@ module CruftTracker
     end
 
     def own_class_methods
-      owner.methods(false) + owner.private_methods(false) -
-        %i[initialize inherited]
+      methods = owner.methods(false)
+
+      if owner.class == Class
+        methods += owner.private_methods(false)
+      elsif owner.class == Module
+        methods +=
+          owner
+            .private_methods(false)
+            .select do |method|
+              owner.method(method).owner.inspect ===
+                owner.singleton_class.inspect
+            end
+      end
+
+      methods
     end
   end
 end
