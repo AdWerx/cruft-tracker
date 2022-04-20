@@ -2,7 +2,7 @@
 
 module CruftTracker
   # TODO: test me?
-  class RecordBacktrace < ApplicationService
+  class RecordBacktrace < CruftTracker::ApplicationService
     record :method, class: CruftTracker::Method
 
     private

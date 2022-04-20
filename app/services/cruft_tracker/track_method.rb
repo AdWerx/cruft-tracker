@@ -1,7 +1,8 @@
 # frozen_string_literal: true
 
 module CruftTracker
-  class TrackMethod < ApplicationService
+  class TrackMethod < CruftTracker::ApplicationService
+    # TODO: these really need to be moved to CruftTracker::Method
     INSTANCE_METHOD = :instance_method
     CLASS_METHOD = :class_method
 
@@ -15,7 +16,11 @@ module CruftTracker
 
     def execute
       method_record = create_or_find_method_record
-      method_record.update(comment: comment) if comment != method_record.comment
+      method_record.deleted_at = nil
+      method_record.comment = comment if comment != method_record.comment
+      method_record.save
+
+      CruftTracker::Registry.instance << method_record
 
       wrap_target_method(
         method_type,

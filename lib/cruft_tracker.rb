@@ -1,5 +1,6 @@
 require 'cruft_tracker/version'
 require 'cruft_tracker/engine'
+require 'cruft_tracker/registry'
 
 module CruftTracker
   # Your code goes here...

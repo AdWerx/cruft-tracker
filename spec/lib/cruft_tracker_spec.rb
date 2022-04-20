@@ -421,11 +421,57 @@ RSpec.describe(CruftTracker) do
       end
 
       it 'does not create multiple of the same arguments record in a race condition' do
-        fail
+        load './spec/dummy/app/models/class_with_method_that_accepts_tracked_arguments.rb'
+        starting_pistol_has_been_fired = false
+
+        threads =
+          10.times.map do
+            Thread.new do
+              true while !starting_pistol_has_been_fired
+              ClassWithMethodThatAcceptsTrackedArguments.new.do_something(
+                1,
+                'blargh',
+                true,
+                [2, 'baz', false],
+                [{ a: 1, b: 'bar' }, { a: 2, b: 'foo' }],
+                x: 213,
+                z: 'whatever',
+                y: true
+              )
+            end
+          end
+        starting_pistol_has_been_fired = true
+        threads.each(&:join)
+
+        expect(CruftTracker::Argument.count).to eq(1)
+
+        # I'm not asserting the exact number of occurrences because we still have a race condition
+        # related to having loaded multiple instances of PotentialCruftStack in memory and I don't want
+        # to have to jump through a zillion hoops to have exactly correct counts. It's not worth the
+        # effort and the impact is low. We could conceivably lose a few occurrence increments, but who
+        # cares?
+        expect(CruftTracker::Argument.first.occurrences).to be > 1
       end
 
-      context 'when deleted potential cruft records exist, but is_this_used? is used to track the same method' do
-        it 'undeletes the record' do
+      context 'when a deleted method record exists for a tracked method' do
+        it 'undeletes the record when the class is loaded' do
+          method =
+            CruftTracker::Method.create(
+              owner: 'ClassWithTaggedInstanceMethod',
+              name: 'some_instance_method',
+              method_type: 'instance_method',
+              deleted_at: 1.day.ago
+            )
+
+          load './spec/dummy/app/models/class_with_tagged_instance_method.rb'
+
+          expect(method.reload.deleted_at).to be_nil
+        end
+      end
+
+      # TODO: this probably doesn't belong here.
+      context 'when no longer tracking a given method' do
+        it 'is marked as deleted' do
           fail
         end
       end

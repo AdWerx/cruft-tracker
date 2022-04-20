@@ -8,5 +8,7 @@ class ClassWithClassAndInstanceMethodsOfTheSameNameThatAreNotDisambiguated
   def some_ambiguous_method_name
     'I am the result of an instance method invocation!'
   end
-  CruftTracker.is_this_method_used? self, :some_ambiguous_method_name
+  if Rails.env.test?
+    CruftTracker.is_this_method_used? self, :some_ambiguous_method_name
+  end
 end

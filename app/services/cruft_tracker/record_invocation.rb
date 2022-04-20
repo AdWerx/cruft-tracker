@@ -2,7 +2,7 @@
 
 module CruftTracker
   # TODO: test me?
-  class RecordInvocation < ApplicationService
+  class RecordInvocation < CruftTracker::ApplicationService
     record :method, class: CruftTracker::Method
 
     def execute

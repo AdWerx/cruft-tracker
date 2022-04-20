@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module CruftTracker
-  class RecordArguments < ApplicationService
+  class RecordArguments < CruftTracker::ApplicationService
     record :method, class: CruftTracker::Method
     array :arguments
     object :transformer, class: Proc
