@@ -12,6 +12,8 @@ module CruftTracker
         backtrace_record.reload
         backtrace_record.update(occurrences: backtrace_record.occurrences + 1)
       end
+
+      backtrace_record
     end
 
     def backtrace_record
@@ -33,9 +35,11 @@ module CruftTracker
 
     def filtered_backtrace
       drop_to_index =
-        caller_locations.find_index do |location|
-          location.path.match(%r{cruft_tracker\/track_method})
-        end + 1
+        (
+          caller_locations.find_index do |location|
+            location.path.match(%r{cruft_tracker\/track_method})
+          end || 0
+        ) + 1
 
       caller_locations
         .drop(drop_to_index)

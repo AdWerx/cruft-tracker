@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 module CruftTracker
-  # TODO: test me?
   class RecordInvocation < CruftTracker::ApplicationService
     record :method, class: CruftTracker::Method
 

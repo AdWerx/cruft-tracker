@@ -6,16 +6,20 @@ module CruftTracker
 
     attr_accessor :tracked_methods
 
+    def self.<<(tracked_method)
+      instance.tracked_methods << tracked_method
+    end
+
+    def self.include?(tracked_method)
+      instance.tracked_methods.include?(tracked_method)
+    end
+
+    def self.reset
+      instance.tracked_methods = []
+    end
+
     def initialize
       @tracked_methods = []
-    end
-
-    def <<(tracked_method)
-      tracked_methods << tracked_method
-    end
-
-    def include?(tracked_method)
-      tracked_methods.include?(tracked_method)
     end
   end
 end

@@ -16,7 +16,7 @@ module CruftTracker
       method_record.comment = comment if comment != method_record.comment
       method_record.save
 
-      CruftTracker::Registry.instance << method_record
+      CruftTracker::Registry << method_record
 
       wrap_target_method(
         method_type,
@@ -24,6 +24,8 @@ module CruftTracker
         method_record,
         arguments_transformer
       )
+
+      method_record
     rescue ActiveRecord::StatementInvalid => e
       raise unless e.cause.present? && e.cause.instance_of?(Mysql2::Error)
 

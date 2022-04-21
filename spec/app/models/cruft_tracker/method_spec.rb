@@ -40,7 +40,7 @@ RSpec.describe(CruftTracker::Method) do
           method_type: CruftTracker::Method::INSTANCE_METHOD
         )
 
-      expect(CruftTracker::Registry.instance.include?(method)).to eq(false)
+      expect(CruftTracker::Registry.include?(method)).to eq(false)
     end
 
     it 'returns true when the tracked method is in the registry' do
@@ -53,9 +53,9 @@ RSpec.describe(CruftTracker::Method) do
           method_type: CruftTracker::Method::INSTANCE_METHOD
         )
 
-      CruftTracker::Registry.instance << method
+      CruftTracker::Registry << method
 
-      expect(CruftTracker::Registry.instance.include?(method)).to eq(true)
+      expect(CruftTracker::Registry.include?(method)).to eq(true)
     end
   end
 

@@ -13,7 +13,7 @@ module CruftTracker
     end
 
     def still_tracked?
-      CruftTracker::Registry.instance.include?(self)
+      CruftTracker::Registry.include?(self)
     end
 
     def ==(other)

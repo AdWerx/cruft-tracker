@@ -13,6 +13,8 @@ module CruftTracker
         arguments_record.reload
         arguments_record.update(occurrences: arguments_record.occurrences + 1)
       end
+
+      arguments_record
     end
 
     def arguments_record

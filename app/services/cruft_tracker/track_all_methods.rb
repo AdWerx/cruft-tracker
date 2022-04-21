@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 module CruftTracker
-  # TODO: test me
   class TrackAllMethods < CruftTracker::ApplicationService
     object :owner, class: Object
     object :comment, class: Object, default: nil
@@ -9,22 +8,27 @@ module CruftTracker
     private
 
     def execute
-      own_instance_methods.each do |instance_method|
-        CruftTracker::TrackMethod.run!(
-          owner: owner,
-          name: instance_method,
-          method_type: CruftTracker::Method::INSTANCE_METHOD,
-          comment: comment
-        )
-      end
-      own_class_methods.each do |class_method|
-        CruftTracker::TrackMethod.run!(
-          owner: owner,
-          name: class_method,
-          method_type: CruftTracker::Method::CLASS_METHOD,
-          comment: comment
-        )
-      end
+      method_records = []
+      method_records +=
+        own_instance_methods.map do |instance_method|
+          CruftTracker::TrackMethod.run!(
+            owner: owner,
+            name: instance_method,
+            method_type: CruftTracker::Method::INSTANCE_METHOD,
+            comment: comment
+          )
+        end
+      method_records +=
+        own_class_methods.map do |class_method|
+          CruftTracker::TrackMethod.run!(
+            owner: owner,
+            name: class_method,
+            method_type: CruftTracker::Method::CLASS_METHOD,
+            comment: comment
+          )
+        end
+
+      method_records.flatten
     end
 
     def own_instance_methods
@@ -32,21 +36,12 @@ module CruftTracker
     end
 
     def own_class_methods
-      methods = owner.methods(false)
-
-      if owner.class == Class
-        methods += owner.private_methods(false)
-      elsif owner.class == Module
-        methods +=
-          owner
-            .private_methods(false)
-            .select do |method|
-              owner.method(method).owner.inspect ===
-                owner.singleton_class.inspect
-            end
-      end
-
-      methods
+      owner.methods(false) +
+        owner
+          .private_methods(false)
+          .select do |method|
+            owner.method(method).owner.inspect === owner.singleton_class.inspect
+          end
     end
   end
 end
