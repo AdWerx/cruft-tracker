@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 module CruftTracker
-  # TODO: test me?
   class RecordBacktrace < CruftTracker::ApplicationService
     record :method, class: CruftTracker::Method
 
@@ -34,15 +33,13 @@ module CruftTracker
     end
 
     def filtered_backtrace
-      drop_to_index =
-        (
-          caller_locations.find_index do |location|
-            location.path.match(%r{cruft_tracker\/track_method})
-          end || 0
-        ) + 1
+      last_locations_before_tracking_starts =
+        caller_locations.reverse.find_index do |location|
+          location.path.match(/.*track_method.*/)
+        end
 
       caller_locations
-        .drop(drop_to_index)
+        .last(last_locations_before_tracking_starts || 0)
         .map do |location|
           {
             path: location.path,

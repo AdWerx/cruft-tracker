@@ -44,17 +44,5 @@ RSpec.describe(CruftTracker::TrackMethod) do
 
       expect(CruftTracker::Registry.include?(method_record)).to eq(true)
     end
-
-    it 'wraps a tracked method so that invocations are recorded' do
-      method_record =
-        CruftTracker::TrackMethod.run!(
-          owner: ClassWithTaggedInstanceMethod,
-          name: :some_instance_method
-        )
-
-      ClassWithTaggedInstanceMethod.new.some_instance_method
-
-      expect(method_record.reload.invocations).to eq(1)
-    end
   end
 end

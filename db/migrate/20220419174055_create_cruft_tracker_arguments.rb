@@ -1,4 +1,4 @@
-class CreateCruftTrackerArguments < ActiveRecord::Migration[6.0]
+class CreateCruftTrackerArguments < ActiveRecord::Migration[5.2]
   def change
     create_table :cruft_tracker_arguments do |t|
       t.references :method, null: false

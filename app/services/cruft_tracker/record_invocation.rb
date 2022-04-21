@@ -9,11 +9,7 @@ module CruftTracker
     end
 
     def increment_invocations
-      CruftTracker::Method.increment_counter(
-        :invocations,
-        method.id,
-        touch: true
-      )
+      method.update(invocations: method.reload.invocations + 1)
     end
   end
 end

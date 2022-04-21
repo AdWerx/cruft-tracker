@@ -19,6 +19,8 @@ RSpec.describe(CruftTracker::Method) do
     end
 
     it 'returns true with the tracked class and method still exist' do
+      load './spec/dummy/app/models/class_with_tagged_instance_method.rb'
+
       expect(
         CruftTracker::Method.new(
           owner: 'ClassWithTaggedInstanceMethod',
@@ -31,8 +33,6 @@ RSpec.describe(CruftTracker::Method) do
 
   describe '#still_tracked?' do
     it 'returns false when the tracked method does not appear in the registry' do
-      CruftTracker::Registry.instance.tracked_methods = []
-
       method =
         CruftTracker::Method.new(
           owner: 'ClassWithUntrackedMethod',
@@ -44,8 +44,6 @@ RSpec.describe(CruftTracker::Method) do
     end
 
     it 'returns true when the tracked method is in the registry' do
-      CruftTracker::Registry.instance.tracked_methods = []
-
       method =
         CruftTracker::Method.new(
           owner: 'ClassWithUntrackedMethod',

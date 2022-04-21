@@ -22,18 +22,15 @@ RSpec.describe(CruftTracker::CleanupUntrackedMethods) do
         method_type: CruftTracker::Method::INSTANCE_METHOD
       )
 
-      # This is a real tracked class with a real tracked method (only this should survive cleanup)
-      CruftTracker::Method.create(
-        owner: 'ClassWithTaggedInstanceMethod',
-        name: :some_instance_method,
-        method_type: CruftTracker::Method::INSTANCE_METHOD
-      )
+      # This loads a real tracked class with a real tracked method (only this should survive cleanup)
+      load './spec/dummy/app/models/class_with_tagged_instance_method.rb'
 
       CruftTracker::CleanupUntrackedMethods.run!
 
       expect(CruftTracker::Method.where('deleted_at is not null').count).to eq(
         3
       )
+      expect(CruftTracker::Method.where('deleted_at is null').count).to eq(1)
     end
   end
 end

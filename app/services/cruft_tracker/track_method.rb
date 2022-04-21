@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+# require 'cruft_tracker/record_invocation'
+# require 'cruft_tracker/record_backtrace'
 module CruftTracker
   class TrackMethod < CruftTracker::ApplicationService
     private
@@ -16,14 +18,14 @@ module CruftTracker
       method_record.comment = comment if comment != method_record.comment
       method_record.save
 
-      CruftTracker::Registry << method_record
-
       wrap_target_method(
         method_type,
         target_method,
         method_record,
         arguments_transformer
       )
+
+      CruftTracker::Registry << method_record
 
       method_record
     rescue ActiveRecord::StatementInvalid => e
