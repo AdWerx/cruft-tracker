@@ -13,7 +13,7 @@ module CruftTracker
         CruftTracker::TrackMethod.run!(
           owner: owner,
           name: instance_method,
-          method_type: CruftTracker::TrackMethod::INSTANCE_METHOD,
+          method_type: CruftTracker::Method::INSTANCE_METHOD,
           comment: comment
         )
       end
@@ -21,7 +21,7 @@ module CruftTracker
         CruftTracker::TrackMethod.run!(
           owner: owner,
           name: class_method,
-          method_type: CruftTracker::TrackMethod::CLASS_METHOD,
+          method_type: CruftTracker::Method::CLASS_METHOD,
           comment: comment
         )
       end

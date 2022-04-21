@@ -2,10 +2,6 @@
 
 module CruftTracker
   class TrackMethod < CruftTracker::ApplicationService
-    # TODO: these really need to be moved to CruftTracker::Method
-    INSTANCE_METHOD = :instance_method
-    CLASS_METHOD = :class_method
-
     private
 
     object :owner, class: Module
@@ -61,7 +57,7 @@ module CruftTracker
             transformer: arguments_transformer
           )
         end
-        if method_type == INSTANCE_METHOD
+        if method_type == CruftTracker::Method::INSTANCE_METHOD
           target_method.bind(self).call(*args)
         else
           target_method.call(*args)
@@ -86,9 +82,9 @@ module CruftTracker
 
     def target_method
       case method_type
-      when INSTANCE_METHOD
+      when CruftTracker::Method::INSTANCE_METHOD
         owner.instance_method(name)
-      when CLASS_METHOD
+      when CruftTracker::Method::CLASS_METHOD
         owner.method(name)
       end
     end
@@ -100,9 +96,9 @@ module CruftTracker
       if is_instance_method && is_class_method
         raise AmbiguousMethodType.new(owner.name, name)
       elsif is_instance_method
-        INSTANCE_METHOD
+        CruftTracker::Method::INSTANCE_METHOD
       elsif is_class_method
-        CLASS_METHOD
+        CruftTracker::Method::CLASS_METHOD
       else
         raise NoSuchMethod.new(owner.name, name)
       end

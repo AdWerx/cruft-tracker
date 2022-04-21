@@ -11,7 +11,7 @@ RSpec.describe(CruftTracker) do
       expect(method.owner).to eq('ClassWithTaggedInstanceMethod')
       expect(method.name).to eq('some_instance_method')
       expect(method.method_type).to eq(
-        CruftTracker::TrackMethod::INSTANCE_METHOD.to_s
+        CruftTracker::Method::INSTANCE_METHOD.to_s
       )
       expect(method.invocations).to eq(0)
       expect(method.deleted_at).to eq(nil)
@@ -33,7 +33,7 @@ RSpec.describe(CruftTracker) do
       expect(method.owner).to eq('ClassWithTaggedInstanceMethod')
       expect(method.name).to eq('some_instance_method')
       expect(method.method_type).to eq(
-        CruftTracker::TrackMethod::INSTANCE_METHOD.to_s
+        CruftTracker::Method::INSTANCE_METHOD.to_s
       )
       expect(method.invocations).to eq(2)
       expect(method.deleted_at).to eq(nil)
@@ -51,9 +51,7 @@ RSpec.describe(CruftTracker) do
       method = CruftTracker::Method.first
       expect(method.owner).to eq('ClassWithTaggedClassMethod')
       expect(method.name).to eq('some_class_method')
-      expect(method.method_type).to eq(
-        CruftTracker::TrackMethod::CLASS_METHOD.to_s
-      )
+      expect(method.method_type).to eq(CruftTracker::Method::CLASS_METHOD.to_s)
       expect(method.invocations).to eq(1)
       expect(method.deleted_at).to eq(nil)
     end
@@ -70,9 +68,7 @@ RSpec.describe(CruftTracker) do
       method = CruftTracker::Method.first
       expect(method.owner).to eq('ModuleWithTaggedMethod')
       expect(method.name).to eq('some_module_method')
-      expect(method.method_type).to eq(
-        CruftTracker::TrackMethod::CLASS_METHOD.to_s
-      )
+      expect(method.method_type).to eq(CruftTracker::Method::CLASS_METHOD.to_s)
       expect(method.invocations).to eq(1)
       expect(method.deleted_at).to eq(nil)
     end
@@ -101,7 +97,7 @@ RSpec.describe(CruftTracker) do
       )
       expect(class_method.name).to eq('some_ambiguous_method_name')
       expect(class_method.method_type).to eq(
-        CruftTracker::TrackMethod::CLASS_METHOD.to_s
+        CruftTracker::Method::CLASS_METHOD.to_s
       )
       expect(class_method.invocations).to eq(1)
       expect(class_method.deleted_at).to eq(nil)
@@ -111,7 +107,7 @@ RSpec.describe(CruftTracker) do
       )
       expect(instance_method.name).to eq('some_ambiguous_method_name')
       expect(instance_method.method_type).to eq(
-        CruftTracker::TrackMethod::INSTANCE_METHOD.to_s
+        CruftTracker::Method::INSTANCE_METHOD.to_s
       )
       expect(instance_method.invocations).to eq(1)
       expect(instance_method.deleted_at).to eq(nil)
@@ -194,9 +190,7 @@ RSpec.describe(CruftTracker) do
       method = CruftTracker::Method.first
       expect(method.owner).to eq(ClassWithPrivateEigenclassMethod.name)
       expect(method.name).to eq('super_private_class_method')
-      expect(method.method_type).to eq(
-        CruftTracker::TrackMethod::CLASS_METHOD.to_s
-      )
+      expect(method.method_type).to eq(CruftTracker::Method::CLASS_METHOD.to_s)
       expect(method.invocations).to eq(1)
     end
 
@@ -210,9 +204,7 @@ RSpec.describe(CruftTracker) do
       method = CruftTracker::Method.first
       expect(method.owner).to eq(ClassWithPrivateClassMethod.name)
       expect(method.name).to eq('be_sneaky')
-      expect(method.method_type).to eq(
-        CruftTracker::TrackMethod::CLASS_METHOD.to_s
-      )
+      expect(method.method_type).to eq(CruftTracker::Method::CLASS_METHOD.to_s)
       expect(method.invocations).to eq(1)
     end
 
@@ -240,7 +232,7 @@ RSpec.describe(CruftTracker) do
         CruftTracker::Method.where(
           owner: 'SomeClassName',
           name: 'foo',
-          method_type: CruftTracker::TrackMethod::INSTANCE_METHOD
+          method_type: CruftTracker::Method::INSTANCE_METHOD
         )
       expect(methods.count).to eq(1)
     end
@@ -348,7 +340,7 @@ RSpec.describe(CruftTracker) do
             CruftTracker::Method.create(
               owner: 'ClassWithTextualComment',
               name: 'some_method',
-              method_type: CruftTracker::TrackMethod::INSTANCE_METHOD,
+              method_type: CruftTracker::Method::INSTANCE_METHOD,
               comment: 'Some old comment'
             )
 

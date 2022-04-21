@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-# TODO: test me
 module CruftTracker
   class Registry
     include Singleton
