@@ -6,13 +6,21 @@ Gem::Specification.new do |spec|
   spec.authors     = ["Doug Hughes"]
   spec.email       = ["dhughes@adwerx.com"]
 
-  spec.summary = 'Provides a system to track method usage somewhat unobtrusively.'
-  spec.description = 'Provides a system to track method usage somewhat unobtrusively.'
-  # spec.homepage = 'https://github.com/dhughes/is_this_used'
+  spec.summary = 'Provides a system to track Ruby method usage somewhat unobtrusively.'
+  spec.description = <<~DESCRIPTION
+    Have you ever asked yourself, "Is this method even being used?!" Or, "What the heck is this method receiving?" Does your application use Rails? If the answers these questions are yes, this gem may be of use to you!
+    
+    Large applications can accrue cruft; old methods that might once have been important, but are now unused or code that is difficult to understand, but dangerous to refactor. Unfortunately, software is _complex_ and sometimes it's unclear what's really going on. This adds maintenance burdens, headaches, and uncertainty.
+    
+    This gem aims to give you a couple tools to make it easier to know what (and how) your code is being used (or not).
+
+    CruftTracker supports Rails versions 5.2 to 6.1 at this time. As of now the gem only supports MySQL, but contributions for Postgres other DBMS would be welcome.
+  DESCRIPTION
+  spec.homepage = 'https://github.com/AdWerx/cruft-tracker'
   spec.license = 'MIT'
 
-  # spec.metadata["homepage_uri"] = spec.homepage
-  # spec.metadata["source_code_uri"] = "TODO: Put your gem's public repo URL here."
+  spec.metadata["homepage_uri"] = spec.homepage
+  spec.metadata["source_code_uri"] = spec.homepage
   # spec.metadata["changelog_uri"] = "TODO: Put your gem's CHANGELOG.md URL here."
 
   spec.files = Dir["{app,config,db,lib}/**/*", "MIT-LICENSE", "Rakefile", "README.md"]
