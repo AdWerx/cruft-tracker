@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    cruft_tracker (0.1.0)
+    cruft_tracker (0.1.2)
       active_interaction (~> 4.1)
       rails (>= 5.2)
 
