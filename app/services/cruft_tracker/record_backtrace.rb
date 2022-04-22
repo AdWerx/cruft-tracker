@@ -8,8 +8,10 @@ module CruftTracker
 
     def execute
       backtrace_record.with_lock do
-        backtrace_record.reload
-        backtrace_record.update(occurrences: backtrace_record.occurrences + 1)
+        CruftTracker::LogSuppressor.suppress_logging do
+          backtrace_record.reload
+          backtrace_record.update(occurrences: backtrace_record.occurrences + 1)
+        end
       end
 
       backtrace_record

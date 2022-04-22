@@ -13,10 +13,14 @@ module CruftTracker
     object :arguments_transformer, class: Proc, default: nil
 
     def execute
-      method_record = create_or_find_method_record
-      method_record.deleted_at = nil
-      method_record.comment = comment if comment != method_record.comment
-      method_record.save
+      method_record =
+        CruftTracker::LogSuppressor.suppress_logging do
+          method_record = create_or_find_method_record
+          method_record.deleted_at = nil
+          method_record.comment = comment if comment != method_record.comment
+          method_record.save
+          method_record
+        end
 
       wrap_target_method(
         method_type,

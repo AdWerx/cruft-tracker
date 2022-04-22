@@ -8,7 +8,7 @@ software is _complex_ and sometimes it's unclear what's really going on. This ad
 
 This gem aims to give you a couple tools to make it easier to know what (and how) your code is being used (or not).
 
-CruftTracker supports Rails versions 5.2 to 6.1 at this time. As of now the gem only supports MySQL, but contributions for Postgres other DBMS would be welcome.
+CruftTracker supports Rails versions 5.2 to 6.1 at this time. As of now the gem only supports MySQL, but contributions for Postgres or other DBMS would be welcome.
 
 ## Installation
 Add this line to your application's Gemfile:
@@ -422,7 +422,7 @@ bundle exec appraisal rails-6.1 rspec spec
 
 You can run the dummy app with docker-compose like so:
 
-```
+```bash
 rm tmp/pids/server.pid
 docker-compose stop ruby
 RAILS_VERSION=6.1 docker-compose up -d ruby
@@ -437,6 +437,22 @@ Tests can be run from a Docker bash console like this:
 
 ```bash
 bundle exec appraisal rails-5.2 rspec ./spec
+```
+
+## Building and Publishing the Gem (because I always forget)
+
+Be sure the bump the version in `CruftTracker::VERSION` before building the gem to publish.
+
+```bash
+gem build cruft_tracker.gemspec
+```
+
+This will create a new gem file with a name like `cruft_tracker-x.y.z.gem` where `x.y.z` is the version number of the gem.
+
+To publish the new version (specify the correct version number): 
+
+```bash
+gem push cruft_tracker-x.y.z.gem
 ```
 
 ## Contributing

@@ -1,0 +1,13 @@
+# frozen_string_literal: true
+
+module CruftTracker
+  class LogSuppressor
+    def self.suppress_logging
+      initial_log_level = ActiveRecord::Base.logger.level
+      ActiveRecord::Base.logger.level = :error
+      yield
+    ensure
+      ActiveRecord::Base.logger.level = initial_log_level
+    end
+  end
+end

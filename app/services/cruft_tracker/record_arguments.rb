@@ -10,8 +10,10 @@ module CruftTracker
 
     def execute
       arguments_record.with_lock do
-        arguments_record.reload
-        arguments_record.update(occurrences: arguments_record.occurrences + 1)
+        CruftTracker::LogSuppressor.suppress_logging do
+          arguments_record.reload
+          arguments_record.update(occurrences: arguments_record.occurrences + 1)
+        end
       end
 
       arguments_record

@@ -5,7 +5,7 @@ module CruftTracker
     record :method, class: CruftTracker::Method
 
     def execute
-      increment_invocations
+      CruftTracker::LogSuppressor.suppress_logging { increment_invocations }
     end
 
     def increment_invocations
