@@ -56,14 +56,19 @@ module CruftTracker
       arguments_transformer
     )
       target_method.owner.define_method target_method.name do |*args|
-        CruftTracker::RecordInvocation.run!(method: method_record)
-        CruftTracker::RecordBacktrace.run!(method: method_record)
-        if arguments_transformer.present?
-          CruftTracker::RecordArguments.run!(
-            method: method_record,
-            arguments: args,
-            transformer: arguments_transformer
-          )
+        begin
+          CruftTracker::RecordInvocation.run!(method: method_record)
+          CruftTracker::RecordBacktrace.run!(method: method_record)
+          if arguments_transformer.present?
+            CruftTracker::RecordArguments.run!(
+              method: method_record,
+              arguments: args,
+              transformer: arguments_transformer
+            )
+          end
+        rescue StandardError
+          # I am intentionally swallowing errors here. If CruftTracker flakes out, we should never
+          # stop the original method from being run correctly.
         end
         if method_type == CruftTracker::Method::INSTANCE_METHOD
           target_method.bind(self).call(*args)
