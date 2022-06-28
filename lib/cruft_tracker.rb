@@ -4,10 +4,17 @@ require 'cruft_tracker/registry'
 require 'cruft_tracker/log_suppressor'
 
 module CruftTracker
-  # Your code goes here...
+  def self.is_this_view_used?(
+    view,
+    comment: nil,
+    track_locals: nil
+  )
+    view = view.is_a?(ActionView::Base) ?
+             view.instance_values['current_template'].short_identifier :
+             view
+    # path_or_view.instance_values['current_template'].short_identifier
 
-  def self.is_this_view_used?
-    puts '>>>> is this view used?'
+    puts ">>>> is this view used? #{view}"
   end
 
   def self.is_this_method_used?(
