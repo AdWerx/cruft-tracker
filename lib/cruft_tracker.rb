@@ -6,7 +6,6 @@ require 'cruft_tracker/log_suppressor'
 module CruftTracker
   def self.init(&block)
     self.instance_eval(&block)
-    puts ">>>> after init"
   end
 
   def self.is_this_view_used?(
@@ -22,7 +21,7 @@ module CruftTracker
   end
 
   def self.record_view_metadata(track_variables: nil)
-    CruftTracker::RecordViewRender.run!(variables_transformer: track_variables)
+    CruftTracker::RecordViewRenderMetadata.run!(variables_transformer: track_variables)
   end
 
   def self.is_this_method_used?(

@@ -337,6 +337,10 @@ This will result in a `cruft_tracker_methods` record being created for each meth
 
 You may want to think twice about using this method, or using this method too widely as it may create more data than you expect. CruftTracker is lightweight, but too much of a good thing is still too much. Generally, you should favor being targeted in your tracking.
 
+### Tracking Views
+
+TODO! Write this up!
+
 ### Clean Up
 
 CruftTacker automatically cleans up after itself. ✨🧹 If you remove an instance of `CruftTracker.is_this_method_used?` to stop tracking a method, CruftTracker will recognize this when your application starts up and mark the associated `cruft_tracker_methods` record as deleted. But, only in environments where eager loading is enabled.

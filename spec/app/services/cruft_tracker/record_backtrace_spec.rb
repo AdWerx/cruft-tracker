@@ -12,19 +12,7 @@ RSpec.describe(CruftTracker::RecordBacktrace) do
           method_type: CruftTracker::Method::INSTANCE_METHOD
         )
 
-      CruftTracker::RecordBacktrace.run!(traceable: method_record)
-
-      expect(CruftTracker::Backtrace.count).to eq(1)
-      expect(CruftTracker::Backtrace.first.occurrences).to eq(1)
-    end
-
-    it 'records backtraces for view rendering' do
-      view_record =
-        CruftTracker::View.create(
-          view: 'some/imaginary/view.html.erb'
-        )
-
-      CruftTracker::RecordBacktrace.run!(traceable: view_record)
+      CruftTracker::RecordBacktrace.run!(method: method_record)
 
       expect(CruftTracker::Backtrace.count).to eq(1)
       expect(CruftTracker::Backtrace.first.occurrences).to eq(1)

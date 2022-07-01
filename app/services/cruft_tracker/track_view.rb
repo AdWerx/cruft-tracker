@@ -50,30 +50,11 @@ module CruftTracker
       ActiveSupport::Notifications.subscribe /!render_.*\.action_view/ do |*args|
         event = ActiveSupport::Notifications::Event.new(*args)
         if event.payload[:identifier] == "#{Rails.root}/#{view}"
-          CruftTracker::RecordRender.run!(view: view_record.id)
-
-
-          # binding.pry
-
-          # NOTE: we can't log backtraces. they have a couple problems:
-          # - first, they don't include the controller that triggered the render
-          # - when views are rendered they become methods on the view renderer. The method names
-          #     have random numbers in them, which product unique stack traces. This could cause a
-          #     zillion backtrace records. So, boo.
-          #
-          # What I want to know are things like:
-          # - what controller / endpoint triggered this render?
-          # - what is the rendering hierarchy? EG: this view rendered this partial, which rendered this other partial, etc.
-          # puts ">>>> payload"
-          # puts event.payload
-
-          # NOTE: if we want to track locals, we'll have to prepend something to the view itself.
-
+          CruftTracker::RecordViewRender.run!(view: view_record.id)
         end
-      rescue StandardError => e
-        binding.pry
+      rescue StandardError
+        # suppress errors
       end
-
     end
 
     def create_or_find_view_record

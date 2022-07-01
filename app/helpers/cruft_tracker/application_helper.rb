@@ -1,22 +1,22 @@
 module CruftTracker
+  # TODO: test me!
   module ApplicationHelper
     def record_cruft_tracker_view_metadata(variables = nil)
-      CruftTracker::RecordViewRender.run(
+      CruftTracker::RecordViewRenderMetadata.run(
         view: cruft_tracker_view,
         controller: controller.class.to_s,
         endpoint: action_name,
         route: route_path,
         render_stack: render_stack
       )
-    # rescue StandardError => e
-    #   binding.pry
+    rescue StandardError => e
+      # TODO: test that if errors occur that we swallow the error
       # Swallow errors
     end
 
     private
 
     def cruft_tracker_view
-      # binding.pry
       CruftTracker::View.find_by(view: render_stack.first.path.gsub(/#{Rails.root}\//, ""))
     end
 

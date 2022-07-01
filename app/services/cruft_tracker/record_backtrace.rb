@@ -2,7 +2,7 @@
 
 module CruftTracker
   class RecordBacktrace < CruftTracker::ApplicationService
-    interface :traceable, methods: %i[backtraces]
+    record :method, class: CruftTracker::Method
 
     private
 
@@ -21,7 +21,7 @@ module CruftTracker
       @backtrace_record ||=
         begin
           CruftTracker::Backtrace.create(
-            traceable: traceable,
+            traceable: method,
             trace_hash: backtrace_hash,
             trace: filtered_backtrace
           )
@@ -35,10 +35,14 @@ module CruftTracker
     end
 
     def filtered_backtrace
-      @filtered_backtrace ||=
-        caller_locations
-          .last(last_location_before_tracking_starts)
-          .map do |location|
+      last_locations_before_tracking_starts =
+        caller_locations.reverse.find_index do |location|
+          location.path.match(/.*track_method.*/)
+        end
+
+      caller_locations
+        .last(last_locations_before_tracking_starts || 0)
+        .map do |location|
           {
             path: location.path,
             label: location.label,
@@ -46,14 +50,6 @@ module CruftTracker
             lineno: location.lineno
           }
         end
-    end
-
-    def last_location_before_tracking_starts
-      caller_locations.reverse.find_index do |location|
-        location.path.match(/^#{Rails.root}\//) || false
-      end + 1
-    rescue
-      0
     end
   end
 end
