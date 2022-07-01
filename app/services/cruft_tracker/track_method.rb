@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-# require 'cruft_tracker/record_invocation'
-# require 'cruft_tracker/record_backtrace'
 module CruftTracker
   class TrackMethod < CruftTracker::ApplicationService
     private
@@ -58,7 +56,7 @@ module CruftTracker
       target_method.owner.define_method target_method.name do |*args|
         begin
           CruftTracker::RecordInvocation.run!(method: method_record)
-          CruftTracker::RecordBacktrace.run!(method: method_record)
+          CruftTracker::RecordBacktrace.run!(traceable: method_record)
           if arguments_transformer.present?
             CruftTracker::RecordArguments.run!(
               method: method_record,

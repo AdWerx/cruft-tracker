@@ -5,6 +5,7 @@ class MainController < ApplicationController
 
   def show
     @name = "Zamboni Overdrive"
+    @some_value = ClassWithTextualComment.new.some_method
   end
 
   private

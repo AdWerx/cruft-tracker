@@ -369,10 +369,10 @@ Returns an array of `CruftTracker::Method` instances.
 
 ##### Arguments
 
-| Name                     | Type                                    | Required? | Default | Description                                                                                                                                                                                                  |
-| ------------------------ | --------------------------------------- | --------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| owner (positional)       | a class or module constant              | yes       | N/A     | A reference to the class or module that owns the method. Set this to `self`.                                                                                                                                 |
-| comment: (named)         | anything that can be serialized to json | no        | nil     | Arbitrary data you want to include with the `cruft_tracker_methods` record. For example, a note about why the method is being tracked or a hash with keys indicating who is tracking the method and and why. |
+| Name               | Type                                    | Required? | Default | Description                                                  |
+| ------------------ | :-------------------------------------- | --------- | ------- | ------------------------------------------------------------ |
+| owner (positional) | a class or module constant              | yes       | N/A     | A reference to the class or module that owns the method. Set this to `self`. |
+| comment: (named)   | anything that can be serialized to json | no        | nil     | Arbitrary data you want to include with the `cruft_tracker_methods` record. For example, a note about why the method is being tracked or a hash with keys indicating who is tracking the method and and why. |
 
 ## Developing
 

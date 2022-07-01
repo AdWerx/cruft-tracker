@@ -4,17 +4,25 @@ require 'cruft_tracker/registry'
 require 'cruft_tracker/log_suppressor'
 
 module CruftTracker
+  def self.init(&block)
+    self.instance_eval(&block)
+    puts ">>>> after init"
+  end
+
   def self.is_this_view_used?(
     view,
     comment: nil,
     track_locals: nil
   )
-    view = view.is_a?(ActionView::Base) ?
-             view.instance_values['current_template'].short_identifier :
-             view
-    # path_or_view.instance_values['current_template'].short_identifier
+    CruftTracker::TrackView.run!(
+      view: view,
+      comment: comment,
+      locals_transformer: track_locals
+    )
+  end
 
-    puts ">>>> is this view used? #{view}"
+  def self.record_view_metadata(track_variables: nil)
+    CruftTracker::RecordViewRender.run!(variables_transformer: track_variables)
   end
 
   def self.is_this_method_used?(

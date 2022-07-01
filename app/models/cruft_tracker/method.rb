@@ -8,6 +8,9 @@ module CruftTracker
     has_many :backtraces, class_name: 'CruftTracker::Backtrace', as: :traceable
     has_many :arguments, class_name: 'CruftTracker::Argument'
 
+    # TODO: I might be able to remove the bit (or bits) about the class / method still existing. I
+    # think with the initializer, things will blow up when the app loads. Or, I simply log a warning
+    # and hope people clean up.
     def still_exists?
       class_still_exists? && method_still_exists?
     end

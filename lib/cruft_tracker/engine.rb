@@ -4,12 +4,16 @@ module CruftTracker
 
     config.after_initialize do
       CruftTracker::CleanupUntrackedMethods.run!
-      CruftTracker::InitiateViewTracking.run!(
-        pathnames: ActionController::Base.view_paths,
-        root_path: Rails.root
-      )
+      # TODO: cleanup untracked views
     rescue StandardError
       # Swallow all errors to prevent initialization failures.
     end
+
+    initializer 'local_helper.action_controller' do
+      ActiveSupport.on_load :action_controller do
+        helper CruftTracker::ApplicationHelper
+      end
+    end
+
   end
 end

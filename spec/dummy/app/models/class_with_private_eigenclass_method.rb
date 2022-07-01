@@ -8,7 +8,6 @@ class ClassWithPrivateEigenclassMethod
       'kapow'
     end
   end
-  CruftTracker.is_this_method_used? self, :super_private_class_method
 
   def self.do_it
     self.super_private_class_method

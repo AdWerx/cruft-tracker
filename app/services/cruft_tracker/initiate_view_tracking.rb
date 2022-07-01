@@ -1,24 +1,20 @@
 # frozen_string_literal: true
 
+# TODO: delete me?
 module CruftTracker
   class InitiateViewTracking < CruftTracker::ApplicationService
     VIEW_TRACKING_REGEX = /<%- CruftTracker\.is_this_view_used\?/
 
+    private
+
     array :pathnames do
       object class: ActionView::OptimizedFileSystemResolver
     end
-    object :root_path, class: Pathname
-
-    private
 
     def execute
       identify_tracked_views.each do |view_path|
-        CruftTracker.is_this_view_used?(view_path.gsub(root_directory, ''))
+        CruftTracker.is_this_view_used?(view_path)
       end
-    end
-
-    def root_directory
-      "#{root_path.to_path}/"
     end
 
     def identify_tracked_views
@@ -28,7 +24,7 @@ module CruftTracker
     end
 
     def view_files
-      pathnames.map { |pathname| Dir.glob("#{pathname.path}/**/*.*") }.flatten
+      pathnames.map { |pathname| Dir.glob("#{pathname.to_path}/**/*.*") }.flatten
     end
   end
 end

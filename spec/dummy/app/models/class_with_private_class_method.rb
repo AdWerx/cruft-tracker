@@ -10,6 +10,4 @@ class ClassWithPrivateClassMethod
   end
 
   private_class_method :be_sneaky
-
-  CruftTracker.is_this_method_used? self, :be_sneaky
 end
