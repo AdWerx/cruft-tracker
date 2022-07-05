@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2022_07_01_125925) do
+ActiveRecord::Schema.define(version: 2022_07_05_152409) do
 
   create_table "cruft_tracker_arguments", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb3", force: :cascade do |t|
     t.bigint "method_id", null: false
@@ -55,6 +55,18 @@ ActiveRecord::Schema.define(version: 2022_07_01_125925) do
   end
 
   create_table "cruft_tracker_render_metadata", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb3", force: :cascade do |t|
+    t.bigint "view_render_id", null: false
+    t.string "metadata_hash", null: false
+    t.json "metadata", null: false
+    t.integer "occurrences", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["metadata_hash"], name: "index_cruft_tracker_render_metadata_on_metadata_hash", unique: true
+    t.index ["occurrences"], name: "index_cruft_tracker_render_metadata_on_occurrences"
+    t.index ["view_render_id"], name: "index_cruft_tracker_render_metadata_on_view_render_id"
+  end
+
+  create_table "cruft_tracker_view_renders", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb3", force: :cascade do |t|
     t.bigint "view_id", null: false
     t.string "render_hash", null: false
     t.string "controller", null: false
@@ -64,12 +76,12 @@ ActiveRecord::Schema.define(version: 2022_07_01_125925) do
     t.integer "occurrences", default: 0, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["controller"], name: "index_cruft_tracker_render_metadata_on_controller"
-    t.index ["endpoint"], name: "index_cruft_tracker_render_metadata_on_endpoint"
-    t.index ["occurrences"], name: "index_cruft_tracker_render_metadata_on_occurrences"
-    t.index ["render_hash"], name: "index_cruft_tracker_render_metadata_on_render_hash"
-    t.index ["view_id", "render_hash"], name: "index_cruft_tracker_render_metadata_on_view_id_and_render_hash", unique: true
-    t.index ["view_id"], name: "index_cruft_tracker_render_metadata_on_view_id"
+    t.index ["controller"], name: "index_cruft_tracker_view_renders_on_controller"
+    t.index ["endpoint"], name: "index_cruft_tracker_view_renders_on_endpoint"
+    t.index ["occurrences"], name: "index_cruft_tracker_view_renders_on_occurrences"
+    t.index ["render_hash"], name: "index_cruft_tracker_view_renders_on_render_hash"
+    t.index ["view_id", "render_hash"], name: "index_cruft_tracker_view_renders_on_view_id_and_render_hash", unique: true
+    t.index ["view_id"], name: "index_cruft_tracker_view_renders_on_view_id"
   end
 
   create_table "cruft_tracker_views", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb3", force: :cascade do |t|

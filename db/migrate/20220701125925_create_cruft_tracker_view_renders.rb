@@ -1,6 +1,6 @@
-class CreateCruftTrackerRenderMetadata < ActiveRecord::Migration[5.2]
+class CreateCruftTrackerViewRenders < ActiveRecord::Migration[5.2]
   def change
-    create_table :cruft_tracker_render_metadata do |t|
+    create_table :cruft_tracker_view_renders do |t|
       t.references :view, null: false
       t.string :render_hash, null: false, index: true, unique: true
       t.string :controller, null: false, index: true

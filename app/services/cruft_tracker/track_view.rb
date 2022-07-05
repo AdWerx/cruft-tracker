@@ -50,7 +50,7 @@ module CruftTracker
       ActiveSupport::Notifications.subscribe /!render_.*\.action_view/ do |*args|
         event = ActiveSupport::Notifications::Event.new(*args)
         if event.payload[:identifier] == "#{Rails.root}/#{view}"
-          CruftTracker::RecordViewRender.run!(view: view_record.id)
+          CruftTracker::IncrementViewRenders.run!(view: view_record.id)
         end
       rescue StandardError
         # suppress errors
