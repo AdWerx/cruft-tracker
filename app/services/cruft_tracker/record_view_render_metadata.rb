@@ -6,7 +6,14 @@ module CruftTracker
     string :controller
     string :endpoint
     string :route
-    array :render_stack # todo: define structure
+    array :render_stack do
+      hash do
+        string :path
+        string :label
+        string :base_label
+        integer :lineno
+      end
+    end
 
     private
 
@@ -28,22 +35,11 @@ module CruftTracker
             controller: controller,
             endpoint: endpoint,
             route: route,
-            render_stack: translated_render_stack
+            render_stack: render_stack
           )
         rescue ActiveRecord::RecordNotUnique
           CruftTracker::RenderMetadata.find_by(render_hash: render_hash)
         end
-    end
-
-    def translated_render_stack
-      render_stack.map do |location|
-        {
-          path: location.path,
-          label: location.label,
-          base_label: location.base_label,
-          lineno: location.lineno
-        }
-      end
     end
 
     def render_hash
@@ -52,7 +48,7 @@ module CruftTracker
           controller: controller,
           endpoint: endpoint,
           route: route,
-          render_stack: render_stack
+          render_stack: render_stack.to_json
         }.to_json
       )
     end

@@ -9,7 +9,7 @@ module CruftTracker
         route: route_path,
         render_stack: render_stack
       )
-    rescue StandardError => e
+    rescue StandardError
       # TODO: test that if errors occur that we swallow the error
       # Swallow errors
     end
@@ -17,7 +17,7 @@ module CruftTracker
     private
 
     def cruft_tracker_view
-      CruftTracker::View.find_by(view: render_stack.first.path.gsub(/#{Rails.root}\//, ""))
+      CruftTracker::View.find_by(view: render_stack.first[:path].gsub(/#{Rails.root}\//, ""))
     end
 
     def route_path
@@ -33,10 +33,18 @@ module CruftTracker
     end
 
     def render_stack
+      @render_stack ||=
         caller_locations.select do |caller_location|
           paths_to_views.any? do |path_for_view|
             caller_location.path.match?(/^#{path_for_view}\//)
           end
+        end.map do |location|
+          {
+            path: location.path,
+            label: location.label,
+            base_label: location.base_label,
+            lineno: location.lineno
+          }
         end
     end
   end

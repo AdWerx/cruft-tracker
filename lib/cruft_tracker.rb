@@ -10,18 +10,12 @@ module CruftTracker
 
   def self.is_this_view_used?(
     view,
-    comment: nil,
-    track_locals: nil
+    comment: nil
   )
     CruftTracker::TrackView.run!(
       view: view,
-      comment: comment,
-      locals_transformer: track_locals
+      comment: comment
     )
-  end
-
-  def self.record_view_metadata(track_variables: nil)
-    CruftTracker::RecordViewRenderMetadata.run!(variables_transformer: track_variables)
   end
 
   def self.is_this_method_used?(
