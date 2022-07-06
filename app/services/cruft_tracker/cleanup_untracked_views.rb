@@ -9,10 +9,10 @@ module CruftTracker
         CruftTracker::View
           .where(deleted_at: nil)
           .each do |view|
-          unless view.still_exists? && view.still_tracked?
-            view.update(deleted_at: Time.current)
+            unless view.still_exists? && view.still_tracked?
+              view.update(deleted_at: Time.current)
+            end
           end
-        end
       end
     rescue StandardError
       # I'm actively ignoring all errors. Chances are, these are due to something like running rake

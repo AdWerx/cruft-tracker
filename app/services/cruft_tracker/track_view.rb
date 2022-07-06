@@ -9,13 +9,14 @@ module CruftTracker
     interface :comment, methods: %i[to_json], default: nil
 
     def execute
-      view_record = CruftTracker::LogSuppressor.suppress_logging do
-        view_record = create_or_find_view_record
-        view_record.deleted_at = nil
-        view_record.comment = comment if comment != view_record.comment
-        view_record.save
-        view_record
-      end
+      view_record =
+        CruftTracker::LogSuppressor.suppress_logging do
+          view_record = create_or_find_view_record
+          view_record.deleted_at = nil
+          view_record.comment = comment if comment != view_record.comment
+          view_record.save
+          view_record
+        end
 
       listen_for_render(view_record)
 
@@ -33,7 +34,7 @@ module CruftTracker
         'CruftTracker was unable to record a view. Have migrations been run?'
       )
     rescue Mysql2::Error::ConnectionError,
-      ActiveRecord::ConnectionNotEstablished
+           ActiveRecord::ConnectionNotEstablished
       Rails.logger.warn(
         'CruftTracker was unable to record a view due to being unable to connect to the database. This may be a non-issue in cases where the database is intentionally not available.'
       )
@@ -51,14 +52,9 @@ module CruftTracker
     end
 
     def create_or_find_view_record
-      CruftTracker::View.create(
-        view: view,
-        comment: comment
-      )
+      CruftTracker::View.create(view: view, comment: comment)
     rescue ActiveRecord::RecordNotUnique
-      CruftTracker::View.find_by(
-        view: view
-      )
+      CruftTracker::View.find_by(view: view)
     end
   end
 end

@@ -10,6 +10,6 @@ class NumbersController < ApplicationController
   def present
     @number = NUMBERS[params[:id].to_i]
 
-    render "show"
+    render 'show'
   end
 end

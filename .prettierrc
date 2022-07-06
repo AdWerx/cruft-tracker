@@ -1,5 +1,6 @@
 {
   "extends": [
     "plugin:@prettier/plugin-ruby"
-  ]
+  ],
+  "rubyPlugins": "plugin/single_quotes"
 }
