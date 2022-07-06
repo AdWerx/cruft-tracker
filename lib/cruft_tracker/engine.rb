@@ -4,7 +4,7 @@ module CruftTracker
 
     config.after_initialize do
       CruftTracker::CleanupUntrackedMethods.run!
-      # TODO: cleanup untracked views
+      CruftTracker::CleanupUntrackedViews.run!
     rescue StandardError
       # Swallow all errors to prevent initialization failures.
     end

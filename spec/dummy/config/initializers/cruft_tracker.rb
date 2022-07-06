@@ -46,14 +46,4 @@ CruftTracker.init do
   is_this_view_used?('app/views/main/show.html.erb', comment: "Look at that view!")
   is_this_view_used?('app/views/shared/_whatever.html.erb')
   is_this_view_used?('app/views/numbers/show.html.erb')
-
-  # this do block could run code afterwards to clean up any tracking we're no longer doing.
-  # maybe the argument is cruft_tracker_config?
-  # maybe I look into some the dsl stuff and see if I can't define something like:
-  #
-  #    is_this_method_used? ClassWithTextualComment,
-  #                         :some_method,
-  #                         comment: 'Tracking is fun!'
-  #
-  # such that is_this_method_used? is resolved magically somehow?
 end

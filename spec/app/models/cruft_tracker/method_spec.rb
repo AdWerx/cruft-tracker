@@ -19,8 +19,6 @@ RSpec.describe(CruftTracker::Method) do
     end
 
     it 'returns true with the tracked class and method still exist' do
-      load './spec/dummy/app/models/class_with_tagged_instance_method.rb'
-
       expect(
         CruftTracker::Method.new(
           owner: 'ClassWithTaggedInstanceMethod',
