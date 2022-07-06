@@ -33,7 +33,7 @@ module CruftTracker
     end
 
     def metadata_hash
-      Digest::MD5.hexdigest([view_render.id, metadata].to_json)
+      Digest::MD5.hexdigest([view_render.render_hash, metadata].to_json)
     end
   end
 end

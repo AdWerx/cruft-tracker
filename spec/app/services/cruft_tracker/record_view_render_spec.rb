@@ -162,7 +162,7 @@ RSpec.describe CruftTracker::RecordViewRender do
             render_stack: render_stack,
             occurrences: 123
           )
-          metadata_hash = Digest::MD5.hexdigest([view_render.id, metadata].to_json)
+          metadata_hash = Digest::MD5.hexdigest([view_render.render_hash, metadata].to_json)
           render_metadata = CruftTracker::RenderMetadata.create(
             view_render: view_render,
             metadata_hash: metadata_hash,
