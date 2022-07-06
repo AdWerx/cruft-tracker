@@ -13,13 +13,16 @@ RSpec.describe CruftTracker::RecordViewRender do
             endpoint: 'show',
             route: '/some:id',
             http_method: 'GET',
-            render_stack:[
+            render_stack: [
               {
-                path: "/app/views/some/show.html.erb",
-                label: "_app_views_some_show_html_erb__1726455257671384410_11260",
+                path: '/app/views/some/show.html.erb',
+                label:
+                  '_app_views_some_show_html_erb__1726455257671384410_11260',
                 lineno: 1,
-                base_label: "_app_views_some_show_html_erb__1726455257671384410_11260"
-              }]
+                base_label:
+                  '_app_views_some_show_html_erb__1726455257671384410_11260'
+              }
+            ]
           )
         end.to change { CruftTracker::ViewRender.count }.by(1)
 
@@ -31,12 +34,14 @@ RSpec.describe CruftTracker::RecordViewRender do
         expect(view_render.http_method).to eq('GET')
         expect(view_render.render_stack).to eq(
           [
-             {
-               "path" => "/app/views/some/show.html.erb",
-               "label" => "_app_views_some_show_html_erb__1726455257671384410_11260",
-               "lineno" => 1,
-               "base_label" => "_app_views_some_show_html_erb__1726455257671384410_11260"
-             }
+            {
+              'path' => '/app/views/some/show.html.erb',
+              'label' =>
+                '_app_views_some_show_html_erb__1726455257671384410_11260',
+              'lineno' => 1,
+              'base_label' =>
+                '_app_views_some_show_html_erb__1726455257671384410_11260'
+            }
           ]
         )
         expect(view_render.occurrences).to eq(1)
@@ -48,26 +53,29 @@ RSpec.describe CruftTracker::RecordViewRender do
           metadata = { some_data: [1, true, { a: 'b' }], something_else: nil }
 
           expect do
-            view_render = CruftTracker::RecordViewRender.run!(
-              view: view,
-              controller: 'SomeController',
-              endpoint: 'show',
-              route: '/some:id',
-              http_method: 'GET',
-              render_stack:[
-                {
-                  path: "/app/views/some/show.html.erb",
-                  label: "_app_views_some_show_html_erb__1726455257671384410_11260",
-                  lineno: 1,
-                  base_label: "_app_views_some_show_html_erb__1726455257671384410_11260"
-                }],
-              metadata: metadata
-            )
+            view_render =
+              CruftTracker::RecordViewRender.run!(
+                view: view,
+                controller: 'SomeController',
+                endpoint: 'show',
+                route: '/some:id',
+                http_method: 'GET',
+                render_stack: [
+                  {
+                    path: '/app/views/some/show.html.erb',
+                    label:
+                      '_app_views_some_show_html_erb__1726455257671384410_11260',
+                    lineno: 1,
+                    base_label:
+                      '_app_views_some_show_html_erb__1726455257671384410_11260'
+                  }
+                ],
+                metadata: metadata
+              )
 
             render_metadata = view_render.render_metadata.first
             expect(render_metadata.metadata_hash).not_to be_nil
             expect(render_metadata.occurrences).to eq(1)
-
           end.to change { CruftTracker::RenderMetadata.count }.by(1)
         end
       end
@@ -82,31 +90,34 @@ RSpec.describe CruftTracker::RecordViewRender do
         http_method = 'GET'
         render_stack = [
           {
-            path: "/app/views/some/show.html.erb",
-            label: "_app_views_some_show_html_erb__1726455257671384410_11260",
-            base_label: "_app_views_some_show_html_erb__1726455257671384410_11260",
+            path: '/app/views/some/show.html.erb',
+            label: '_app_views_some_show_html_erb__1726455257671384410_11260',
+            base_label:
+              '_app_views_some_show_html_erb__1726455257671384410_11260',
             lineno: 1
           }
         ]
-        render_hash = Digest::MD5.hexdigest(
-          {
+        render_hash =
+          Digest::MD5.hexdigest(
+            {
+              controller: controller,
+              endpoint: endpoint,
+              route: route,
+              http_method: http_method,
+              render_stack: render_stack.to_json
+            }.to_json
+          )
+        view_render =
+          CruftTracker::ViewRender.create(
+            view: view,
+            render_hash: render_hash,
             controller: controller,
             endpoint: endpoint,
             route: route,
             http_method: http_method,
-            render_stack: render_stack.to_json
-          }.to_json
-        )
-        view_render = CruftTracker::ViewRender.create(
-          view: view,
-          render_hash: render_hash,
-          controller: controller,
-          endpoint: endpoint,
-          route: route,
-          http_method: http_method,
-          render_stack: render_stack,
-          occurrences: 123
-        )
+            render_stack: render_stack,
+            occurrences: 123
+          )
 
         expect do
           CruftTracker::RecordViewRender.run!(
@@ -128,10 +139,12 @@ RSpec.describe CruftTracker::RecordViewRender do
         expect(view_render.render_stack).to eq(
           [
             {
-              "path" => "/app/views/some/show.html.erb",
-              "label" => "_app_views_some_show_html_erb__1726455257671384410_11260",
-              "lineno" => 1,
-              "base_label" => "_app_views_some_show_html_erb__1726455257671384410_11260"
+              'path' => '/app/views/some/show.html.erb',
+              'label' =>
+                '_app_views_some_show_html_erb__1726455257671384410_11260',
+              'lineno' => 1,
+              'base_label' =>
+                '_app_views_some_show_html_erb__1726455257671384410_11260'
             }
           ]
         )
@@ -148,38 +161,43 @@ RSpec.describe CruftTracker::RecordViewRender do
           http_method = 'GET'
           render_stack = [
             {
-              path: "/app/views/some/show.html.erb",
-              label: "_app_views_some_show_html_erb__1726455257671384410_11260",
-              base_label: "_app_views_some_show_html_erb__1726455257671384410_11260",
+              path: '/app/views/some/show.html.erb',
+              label: '_app_views_some_show_html_erb__1726455257671384410_11260',
+              base_label:
+                '_app_views_some_show_html_erb__1726455257671384410_11260',
               lineno: 1
             }
           ]
-          render_hash = Digest::MD5.hexdigest(
-            {
+          render_hash =
+            Digest::MD5.hexdigest(
+              {
+                controller: controller,
+                endpoint: endpoint,
+                route: route,
+                http_method: http_method,
+                render_stack: render_stack.to_json
+              }.to_json
+            )
+          view_render =
+            CruftTracker::ViewRender.create(
+              view: view,
+              render_hash: render_hash,
               controller: controller,
               endpoint: endpoint,
               route: route,
               http_method: http_method,
-              render_stack: render_stack.to_json
-            }.to_json
-          )
-          view_render = CruftTracker::ViewRender.create(
-            view: view,
-            render_hash: render_hash,
-            controller: controller,
-            endpoint: endpoint,
-            route: route,
-            http_method: http_method,
-            render_stack: render_stack,
-            occurrences: 123
-          )
-          metadata_hash = Digest::MD5.hexdigest([view_render.render_hash, metadata].to_json)
-          render_metadata = CruftTracker::RenderMetadata.create(
-            view_render: view_render,
-            metadata_hash: metadata_hash,
-            metadata: metadata,
-            occurrences: 234
-          )
+              render_stack: render_stack,
+              occurrences: 123
+            )
+          metadata_hash =
+            Digest::MD5.hexdigest([view_render.render_hash, metadata].to_json)
+          render_metadata =
+            CruftTracker::RenderMetadata.create(
+              view_render: view_render,
+              metadata_hash: metadata_hash,
+              metadata: metadata,
+              occurrences: 234
+            )
 
           expect do
             CruftTracker::RecordViewRender.run!(

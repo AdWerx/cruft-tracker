@@ -14,6 +14,5 @@ module CruftTracker
         helper CruftTracker::ApplicationHelper
       end
     end
-
   end
 end

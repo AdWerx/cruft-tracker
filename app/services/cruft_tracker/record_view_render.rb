@@ -28,7 +28,9 @@ module CruftTracker
 
         view_render_record.with_lock do
           view_render_record.reload
-          view_render_record.update(occurrences: view_render_record.occurrences + 1)
+          view_render_record.update(
+            occurrences: view_render_record.occurrences + 1
+          )
 
           record_render_metadata(view_render_record)
 
@@ -38,9 +40,11 @@ module CruftTracker
     end
 
     def record_render_metadata(view_render_record)
-      compose(CruftTracker::RecordRenderMetadata,
-              view_render: view_render_record,
-              metadata: metadata)
+      compose(
+        CruftTracker::RecordRenderMetadata,
+        view_render: view_render_record,
+        metadata: metadata
+      )
     end
 
     def view_render_record
@@ -71,6 +75,5 @@ module CruftTracker
         }.to_json
       )
     end
-
   end
 end

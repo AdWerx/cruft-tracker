@@ -5,15 +5,16 @@ RSpec.describe CruftTracker::RecordRenderMetadata do
     context 'with no metadata' do
       it 'does nothing' do
         view = CruftTracker::View.create(view: 'some/view.html.erb')
-        view_render = CruftTracker::ViewRender.create(
-          view: view,
-          render_hash: '123',
-          controller: 'SomeController',
-          endpoint: 'some_endpoint',
-          route: '/foo',
-          http_method: 'POST',
-          render_stack: []
-        )
+        view_render =
+          CruftTracker::ViewRender.create(
+            view: view,
+            render_hash: '123',
+            controller: 'SomeController',
+            endpoint: 'some_endpoint',
+            route: '/foo',
+            http_method: 'POST',
+            render_stack: []
+          )
 
         expect do
           CruftTracker::RecordRenderMetadata.run!(
@@ -27,20 +28,23 @@ RSpec.describe CruftTracker::RecordRenderMetadata do
     context 'with new metadata' do
       it 'creates new a metadata record' do
         view = CruftTracker::View.create(view: 'some/view.html.erb')
-        view_render = CruftTracker::ViewRender.create(
-          view: view,
-          render_hash: '123',
-          controller: 'SomeController',
-          endpoint: 'some_endpoint',
-          route: '/foo',
-          http_method: 'DELETE',
-          render_stack: []
-        )
+        view_render =
+          CruftTracker::ViewRender.create(
+            view: view,
+            render_hash: '123',
+            controller: 'SomeController',
+            endpoint: 'some_endpoint',
+            route: '/foo',
+            http_method: 'DELETE',
+            render_stack: []
+          )
 
         expect do
           CruftTracker::RecordRenderMetadata.run!(
             view_render: view_render,
-            metadata: { some: 'metadata' }
+            metadata: {
+              some: 'metadata'
+            }
           )
         end.to change { CruftTracker::RenderMetadata.count }.by(1)
       end
@@ -49,26 +53,32 @@ RSpec.describe CruftTracker::RecordRenderMetadata do
     context 'with existing metadata' do
       it 'increments the occurrences of the metadata' do
         view = CruftTracker::View.create(view: 'some/view.html.erb')
-        view_render = CruftTracker::ViewRender.create(
-          view: view,
-          render_hash: '123',
-          controller: 'SomeController',
-          endpoint: 'some_endpoint',
-          route: '/foo',
-          http_method: 'PUT',
-          render_stack: []
-        )
-        render_metadata = CruftTracker::RenderMetadata.create(
-          view_render: view_render,
-          metadata: { some: 'metadata' },
-          metadata_hash: '631de6c2b97ff87eb40526dd6f11bc92',
-          occurrences: 1
-        )
+        view_render =
+          CruftTracker::ViewRender.create(
+            view: view,
+            render_hash: '123',
+            controller: 'SomeController',
+            endpoint: 'some_endpoint',
+            route: '/foo',
+            http_method: 'PUT',
+            render_stack: []
+          )
+        render_metadata =
+          CruftTracker::RenderMetadata.create(
+            view_render: view_render,
+            metadata: {
+              some: 'metadata'
+            },
+            metadata_hash: '631de6c2b97ff87eb40526dd6f11bc92',
+            occurrences: 1
+          )
 
         expect do
           CruftTracker::RecordRenderMetadata.run!(
             view_render: view_render,
-            metadata: { some: 'metadata' }
+            metadata: {
+              some: 'metadata'
+            }
           )
 
           render_metadata.reload

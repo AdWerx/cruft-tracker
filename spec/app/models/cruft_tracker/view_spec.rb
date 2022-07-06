@@ -4,13 +4,17 @@ RSpec.describe CruftTracker::View do
   describe '#still_exists?' do
     it 'returns false for a view that does not exist' do
       expect(
-        CruftTracker::View.new(view: 'app/views/numbers/foo.html.erb').still_exists?
+        CruftTracker::View.new(
+          view: 'app/views/numbers/foo.html.erb'
+        ).still_exists?
       ).to eq(false)
     end
 
     it 'returns true for a view that exists' do
       expect(
-        CruftTracker::View.new(view: 'app/views/numbers/index.html.erb').still_exists?
+        CruftTracker::View.new(
+          view: 'app/views/numbers/index.html.erb'
+        ).still_exists?
       ).to eq(true)
     end
   end

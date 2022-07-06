@@ -8,14 +8,8 @@ module CruftTracker
     self.instance_eval(&block)
   end
 
-  def self.is_this_view_used?(
-    view,
-    comment: nil
-  )
-    CruftTracker::TrackView.run!(
-      view: view,
-      comment: comment
-    )
+  def self.is_this_view_used?(view, comment: nil)
+    CruftTracker::TrackView.run!(view: view, comment: comment)
   end
 
   def self.is_this_method_used?(

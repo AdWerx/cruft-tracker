@@ -11,7 +11,9 @@ module CruftTracker
 
     def still_tracked?
       return true if CruftTracker::Registry.include?(self)
-      return true if File.read(absolute_path).match?(/record_cruft_tracker_view_render/)
+      if File.read(absolute_path).match?(/record_cruft_tracker_view_render/)
+        return true
+      end
 
       false
     end

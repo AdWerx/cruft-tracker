@@ -14,7 +14,9 @@ module CruftTracker
       CruftTracker::LogSuppressor.suppress_logging do
         render_metadata_record.with_lock do
           render_metadata_record.reload
-          render_metadata_record.update(occurrences: render_metadata_record.occurrences + 1)
+          render_metadata_record.update(
+            occurrences: render_metadata_record.occurrences + 1
+          )
         end
       end
     end

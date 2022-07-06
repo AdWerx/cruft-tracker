@@ -12,7 +12,8 @@ RUN apt-get update -qq \
     libmariadb-dev \
     build-essential \
     git \
-    shared-mime-info
+    shared-mime-info \
+    nodejs
 
 ARG BUNDLER_VERSION=2.1.4
 

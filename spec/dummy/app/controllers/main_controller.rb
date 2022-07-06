@@ -4,7 +4,7 @@ class MainController < ApplicationController
   helper_method :uuid
 
   def show
-    @name = "Zamboni Overdrive"
+    @name = 'Zamboni Overdrive'
     @some_value = ClassWithTextualComment.new.some_method
   end
 

@@ -23,7 +23,10 @@ RSpec.describe(CruftTracker::CleanupUntrackedMethods) do
       )
 
       # This tracks a real class with a real method (only this should survive cleanup)
-      CruftTracker.is_this_method_used?(ClassWithTaggedInstanceMethod, :some_instance_method)
+      CruftTracker.is_this_method_used?(
+        ClassWithTaggedInstanceMethod,
+        :some_instance_method
+      )
 
       CruftTracker::CleanupUntrackedMethods.run!
 

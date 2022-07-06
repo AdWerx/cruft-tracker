@@ -17,7 +17,7 @@ module CruftTracker
     private
 
     def cruft_tracker_view
-      path = render_stack.first[:path].gsub(/#{Rails.root}\//, "")
+      path = render_stack.first[:path].gsub(%r{#{Rails.root}/}, '')
       view = CruftTracker::View.find_by(view: path)
 
       return view if view.present?
@@ -26,9 +26,9 @@ module CruftTracker
     end
 
     def route_path
-      _routes.router.recognize(request) do |route, _|
-        return route.path.spec.to_s
-      end
+      _routes
+        .router
+        .recognize(request) { |route, _| return route.path.spec.to_s }
 
       nil
     end
@@ -38,18 +38,20 @@ module CruftTracker
     end
 
     def render_stack
-      caller_locations.select do |caller_location|
-        paths_to_views.any? do |path_for_view|
-          caller_location.path.match?(/^#{path_for_view}\//)
+      caller_locations
+        .select do |caller_location|
+          paths_to_views.any? do |path_for_view|
+            caller_location.path.match?(%r{^#{path_for_view}/})
+          end
         end
-      end.map do |location|
-        {
-          path: location.path,
-          label: location.label,
-          base_label: location.base_label,
-          lineno: location.lineno
-        }
-      end
+        .map do |location|
+          {
+            path: location.path,
+            label: location.label,
+            base_label: location.base_label,
+            lineno: location.lineno
+          }
+        end
     end
   end
 end

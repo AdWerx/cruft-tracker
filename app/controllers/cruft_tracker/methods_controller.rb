@@ -2,9 +2,7 @@
 
 module CruftTracker
   class MethodsController < ApplicationController
-
     def index
-      
     end
   end
 end

@@ -13,11 +13,9 @@ RSpec.describe(CruftTracker::TrackMethod) do
         ActiveRecord::Base.connection.execute(
           'RENAME TABLE cruft_tracker_methods TO tmp_cruft_tracker_methods'
         )
-        expect(Rails.logger).to receive(:warn)
-          .with(
-            'CruftTracker was unable to record a method. Does the cruft_tracker_methods table exist? Have migrations been run?'
-          )
-          .at_least(:once)
+        expect(Rails.logger).to receive(:warn).with(
+          'CruftTracker was unable to record a method. Does the cruft_tracker_methods table exist? Have migrations been run?'
+        ).at_least(:once)
 
         CruftTracker::TrackMethod.run!(
           owner: ClassWithTaggedInstanceMethod,

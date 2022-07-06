@@ -4,7 +4,9 @@ RSpec.describe CruftTracker::TrackView do
   describe '#run!' do
     context 'without an existing view record' do
       it 'creates a view record and configures a render subscription' do
-        expect(ActiveSupport::Notifications).to receive(:subscribe).with(instance_of(Regexp))
+        expect(ActiveSupport::Notifications).to receive(:subscribe).with(
+          instance_of(Regexp)
+        )
 
         expect do
           CruftTracker::TrackView.run!(view: 'some/view.html.erb')
@@ -15,7 +17,9 @@ RSpec.describe CruftTracker::TrackView do
     context 'with an existing view record' do
       it 'configures a render subscription' do
         CruftTracker::View.create(view: 'some/view.html.erb')
-        expect(ActiveSupport::Notifications).to receive(:subscribe).with(instance_of(Regexp))
+        expect(ActiveSupport::Notifications).to receive(:subscribe).with(
+          instance_of(Regexp)
+        )
 
         expect do
           CruftTracker::TrackView.run!(view: 'some/view.html.erb')
@@ -25,8 +29,14 @@ RSpec.describe CruftTracker::TrackView do
 
     context 'when the view record has been deleted' do
       it 'undeletes the view record' do
-        view = CruftTracker::View.create(view: 'some/view.html.erb', deleted_at: Time.current)
-        expect(ActiveSupport::Notifications).to receive(:subscribe).with(instance_of(Regexp))
+        view =
+          CruftTracker::View.create(
+            view: 'some/view.html.erb',
+            deleted_at: Time.current
+          )
+        expect(ActiveSupport::Notifications).to receive(:subscribe).with(
+          instance_of(Regexp)
+        )
 
         CruftTracker::TrackView.run!(view: 'some/view.html.erb')
 
