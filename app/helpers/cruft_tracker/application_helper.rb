@@ -16,9 +16,12 @@ module CruftTracker
     private
 
     def cruft_tracker_view
-      CruftTracker::View.find_or_create_by(
-        view: render_stack.first[:path].gsub(/#{Rails.root}\//, "")
-      )
+      path = render_stack.first[:path].gsub(/#{Rails.root}\//, "")
+      view = CruftTracker::View.find_by(view: path)
+
+      return view if view.present?
+
+      CruftTracker::TrackView.run!(view: path)
     end
 
     def route_path

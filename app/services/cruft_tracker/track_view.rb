@@ -1,15 +1,12 @@
 # frozen_string_literal: true
 
-# TODO: test me
-# - when a view record does not exist, it creates it
-# - when a view record exists, it does not create it
 module CruftTracker
+  # creates or updates a CruftTracker:View record and configures subscriptions for render events
   class TrackView < CruftTracker::ApplicationService
     private
 
     string :view
-    object :comment, class: Object, default: nil
-    object :locals_transformer, class: Proc, default: nil
+    interface :comment, methods: %i[to_json], default: nil
 
     def execute
       view_record = CruftTracker::LogSuppressor.suppress_logging do
@@ -22,13 +19,9 @@ module CruftTracker
 
       listen_for_render(view_record)
 
-      # TODO: should we assert the view exists on disk?
-
-      # TODO: I don't know if I need this registry or not. Maybe?
       CruftTracker::Registry << view_record
 
       view_record
-
     rescue ActiveRecord::StatementInvalid => e
       raise unless e.cause.present? && e.cause.instance_of?(Mysql2::Error)
 
