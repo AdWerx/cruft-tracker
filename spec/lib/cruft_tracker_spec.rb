@@ -4,7 +4,7 @@ RSpec.describe(CruftTracker) do
   describe '.is_this_method_used?' do
     it 'creates method records before methods are invoked' do
       expect do
-        load './spec/dummy/app/models/class_with_tagged_instance_method.rb'
+        CruftTracker.is_this_method_used?(ClassWithTaggedInstanceMethod, :some_instance_method)
       end.to change { CruftTracker::Method.count }.by(1)
 
       method = CruftTracker::Method.first
@@ -19,7 +19,7 @@ RSpec.describe(CruftTracker) do
 
     it 'overrides instance methods on classes that tag methods with is_this_method_used?' do
       expect do
-        load './spec/dummy/app/models/class_with_tagged_instance_method.rb'
+        CruftTracker.is_this_method_used?(ClassWithTaggedInstanceMethod, :some_instance_method)
       end.to change { CruftTracker::Method.count }.by(1)
 
       test_class = ClassWithTaggedInstanceMethod.new
@@ -41,7 +41,7 @@ RSpec.describe(CruftTracker) do
 
     it 'overrides class methods on classes that tag methods with is_this_method_used?' do
       expect do
-        load './spec/dummy/app/models/class_with_tagged_class_method.rb'
+        CruftTracker.is_this_method_used?(ClassWithTaggedClassMethod, :some_class_method)
       end.to change { CruftTracker::Method.count }.by(1)
 
       result = ClassWithTaggedClassMethod.some_class_method
@@ -58,7 +58,7 @@ RSpec.describe(CruftTracker) do
 
     it 'overrides methods on modules that tag methods with is_this_method_used?' do
       expect do
-        load './spec/dummy/app/models/module_with_tagged_method.rb'
+        CruftTracker.is_this_method_used?(ModuleWithTaggedMethod, :some_module_method)
       end.to change { CruftTracker::Method.count }.by(1)
 
       result = ModuleWithTaggedMethod.some_module_method
@@ -75,7 +75,13 @@ RSpec.describe(CruftTracker) do
 
     it 'allows the user to disambiguate between class and instance methods with the same name' do
       expect do
-        load './spec/dummy/app/models/class_with_class_and_instance_methods_of_the_same_name.rb'
+        CruftTracker.is_this_method_used?(ClassWithClassAndInstanceMethodsOfTheSameName,
+                                          :some_ambiguous_method_name,
+                                          method_type: CruftTracker::Method::CLASS_METHOD)
+
+        CruftTracker.is_this_method_used?(ClassWithClassAndInstanceMethodsOfTheSameName,
+                                          :some_ambiguous_method_name,
+                                          method_type: CruftTracker::Method::INSTANCE_METHOD)
       end.to change { CruftTracker::Method.count }.by(2)
 
       class_result =
@@ -115,19 +121,24 @@ RSpec.describe(CruftTracker) do
 
     it 'raises when class and instance methods with the same name are not disambiguated' do
       expect do
-        load './spec/dummy/app/models/class_with_class_and_instance_methods_of_the_same_name_that_are_not_disambiguated.rb'
+        CruftTracker.is_this_method_used?(
+          ClassWithClassAndInstanceMethodsOfTheSameNameThatAreNotDisambiguated,
+          :some_ambiguous_method_name
+        )
       end.to raise_error(CruftTracker::TrackMethod::AmbiguousMethodType)
     end
 
     it 'raises when trying to track a method that does not exist' do
       expect do
-        load './spec/dummy/app/models/class_tracking_method_that_does_not_exist.rb'
+        CruftTracker.is_this_method_used?(ClassTrackingMethodThatDoesNotExist,
+                                          :some_missing_method_name)
       end.to raise_error(CruftTracker::TrackMethod::NoSuchMethod)
     end
 
     it 'records distinct stack traces for method invocations' do
       expect do
-        load './spec/dummy/app/models/class_with_multiple_backtraces_to_the_same_tracked_method.rb'
+        CruftTracker.is_this_method_used?(ClassWithMultipleBacktracesToTheSameTrackedMethod,
+                                          :tracked_method)
       end.to change { CruftTracker::Method.count }.by(1)
 
       test_class = ClassWithMultipleBacktracesToTheSameTrackedMethod.new
@@ -156,7 +167,7 @@ RSpec.describe(CruftTracker) do
 
     it 'tracks private instance methods' do
       expect do
-        load './spec/dummy/app/models/class_with_private_instance_method.rb'
+        CruftTracker.is_this_method_used?(ClassWithPrivateInstanceMethod, :some_private_method)
       end.to change { CruftTracker::Method.count }.by(1)
 
       ClassWithPrivateInstanceMethod.new.do_something
@@ -169,7 +180,7 @@ RSpec.describe(CruftTracker) do
 
     it 'tracks protected instance methods' do
       expect do
-        load './spec/dummy/app/models/class_with_protected_instance_method.rb'
+        CruftTracker.is_this_method_used?(ClassWithProtectedInstanceMethod, :some_protected_method)
       end.to change { CruftTracker::Method.count }.by(1)
 
       ClassWithProtectedInstanceMethod.new.do_something
@@ -182,7 +193,8 @@ RSpec.describe(CruftTracker) do
 
     it 'tracks private eigenclass methods' do
       expect do
-        load './spec/dummy/app/models/class_with_private_eigenclass_method.rb'
+        CruftTracker.is_this_method_used?(ClassWithPrivateEigenclassMethod,
+                                          :super_private_class_method)
       end.to change { CruftTracker::Method.count }.by(1)
 
       ClassWithPrivateEigenclassMethod.do_it
@@ -196,7 +208,7 @@ RSpec.describe(CruftTracker) do
 
     it 'tracks private class methods' do
       expect do
-        load './spec/dummy/app/models/class_with_private_class_method.rb'
+        CruftTracker.is_this_method_used?(ClassWithPrivateClassMethod, :be_sneaky)
       end.to change { CruftTracker::Method.count }.by(1)
 
       ClassWithPrivateClassMethod.do_the_sneaky_thing
@@ -221,7 +233,7 @@ RSpec.describe(CruftTracker) do
               end
 
               def foo; end
-              CruftTracker.is_this_method_used? self, :foo
+              CruftTracker.is_this_method_used?(self, :foo)
             end
           end
         end
@@ -239,7 +251,7 @@ RSpec.describe(CruftTracker) do
 
     it 'does not create multiple of the same stack record in a race condition' do
       starting_pistol_has_been_fired = false
-      load './spec/dummy/app/models/class_with_tagged_instance_method.rb'
+      CruftTracker.is_this_method_used?(ClassWithTaggedInstanceMethod, :some_instance_method)
 
       threads =
         10.times.map do
@@ -263,10 +275,7 @@ RSpec.describe(CruftTracker) do
 
     it 'tracks the method itself, not overrides or super methods' do
       expect do
-        load './spec/dummy/app/models/class_with_untracked_method.rb'
-        load './spec/dummy/app/models/subclass_with_tracked_method.rb'
-        load './spec/dummy/app/models/sub_subclass_with_untracked_method.rb'
-        load './spec/dummy/app/models/sub_subclass_with_untracked_method_that_calls_tracked_super_method.rb'
+        CruftTracker.is_this_method_used?(SubclassWithTrackedMethod, :hello)
       end.to change { CruftTracker::Method.count }.by(1)
 
       method = CruftTracker::Method.first
@@ -309,14 +318,16 @@ RSpec.describe(CruftTracker) do
           )
           .at_least(:once)
 
-        load './spec/dummy/app/models/class_with_tagged_instance_method.rb'
+        CruftTracker.is_this_method_used?(ClassWithTaggedInstanceMethod, :some_instance_method)
       end
     end
 
     context 'with a comment' do
       context 'when the comment is text' do
         it 'writes text' do
-          load './spec/dummy/app/models/class_with_textual_comment.rb'
+          CruftTracker.is_this_method_used?(ClassWithTextualComment,
+                                            :some_method,
+                                            comment: 'Tracking is fun!')
 
           method = CruftTracker::Method.first
 
@@ -326,7 +337,14 @@ RSpec.describe(CruftTracker) do
 
       context 'when the comment is serializable to json' do
         it 'writes json' do
-          load './spec/dummy/app/models/class_with_hash_comment.rb'
+          CruftTracker.is_this_method_used?(
+            ClassWithHashComment,
+            :some_method,
+            comment: {
+              foo: true,
+              bar: [1, 'two']
+            }
+          )
 
           method = CruftTracker::Method.first
 
@@ -344,7 +362,7 @@ RSpec.describe(CruftTracker) do
               comment: 'Some old comment'
             )
 
-          load './spec/dummy/app/models/class_with_textual_comment.rb'
+          CruftTracker.is_this_method_used?(ClassWithTextualComment, :some_method, comment: 'Tracking is fun!')
 
           expect(method.reload.comment).to eq('Tracking is fun!')
         end
@@ -354,7 +372,8 @@ RSpec.describe(CruftTracker) do
     context 'when track_arguments is not provided' do
       it 'does not track arguments' do
         expect do
-          load './spec/dummy/app/models/class_with_method_that_accepts_untracked_arguments.rb'
+          CruftTracker.is_this_method_used?(ClassWithMethodThatAcceptsUntrackedArguments,
+                                            :describe_thing)
         end.to change { CruftTracker::Method.count }.by(1)
 
         ClassWithMethodThatAcceptsUntrackedArguments.new.describe_thing(
@@ -371,7 +390,13 @@ RSpec.describe(CruftTracker) do
 
     context 'when track_arguments is a lambda' do
       it 'tracks distinct transformed arguments provided to the method' do
-        load './spec/dummy/app/models/class_with_method_that_accepts_tracked_arguments.rb'
+        CruftTracker.is_this_method_used?(
+          ClassWithMethodThatAcceptsTrackedArguments,
+          :do_something,
+          track_arguments: ->(args) {
+            args.last.keys.sort
+          }
+        )
 
         example = ClassWithMethodThatAcceptsTrackedArguments.new
         example.do_something(
@@ -413,7 +438,13 @@ RSpec.describe(CruftTracker) do
       end
 
       it 'does not create multiple of the same arguments record in a race condition' do
-        load './spec/dummy/app/models/class_with_method_that_accepts_tracked_arguments.rb'
+        CruftTracker.is_this_method_used?(
+          ClassWithMethodThatAcceptsTrackedArguments,
+          :do_something,
+          track_arguments: ->(args) {
+            args.last.keys.sort
+          }
+        )
         starting_pistol_has_been_fired = false
 
         threads =
@@ -455,7 +486,7 @@ RSpec.describe(CruftTracker) do
               deleted_at: 1.day.ago
             )
 
-          load './spec/dummy/app/models/class_with_tagged_instance_method.rb'
+          CruftTracker.is_this_method_used?(ClassWithTaggedInstanceMethod, :some_instance_method)
 
           expect(method.reload.deleted_at).to be_nil
         end
@@ -465,7 +496,7 @@ RSpec.describe(CruftTracker) do
 
   describe '#are_any_of_these_methods_used?' do
     it 'tracks all class and instance methods belonging directly to a class' do
-      load './spec/dummy/app/models/class_that_is_tracking_all_methods.rb'
+      CruftTracker.are_any_of_these_methods_being_used?(ClassThatIsTrackingAllMethods)
 
       ClassThatIsTrackingAllMethods.do_the_sneaky_thing
       ClassThatIsTrackingAllMethods.do_it
@@ -535,7 +566,7 @@ RSpec.describe(CruftTracker) do
     end
 
     it 'tracks invocations of all methods on a module' do
-      load './spec/dummy/app/models/module_that_is_tracking_all_methods.rb'
+      CruftTracker.are_any_of_these_methods_being_used?(ModuleThatIsTrackingAllMethods)
 
       ModuleThatIsTrackingAllMethods.some_module_method
       ModuleThatIsTrackingAllMethods.be_sneaky

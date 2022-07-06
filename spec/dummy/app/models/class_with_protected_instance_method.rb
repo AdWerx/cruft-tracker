@@ -10,6 +10,4 @@ class ClassWithProtectedInstanceMethod
   def some_protected_method
     'I am safely protected'
   end
-
-  CruftTracker.is_this_method_used? self, :some_protected_method
 end

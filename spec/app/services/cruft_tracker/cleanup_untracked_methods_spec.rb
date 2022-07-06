@@ -22,8 +22,8 @@ RSpec.describe(CruftTracker::CleanupUntrackedMethods) do
         method_type: CruftTracker::Method::INSTANCE_METHOD
       )
 
-      # This loads a real tracked class with a real tracked method (only this should survive cleanup)
-      load './spec/dummy/app/models/class_with_tagged_instance_method.rb'
+      # This tracks a real class with a real method (only this should survive cleanup)
+      CruftTracker.is_this_method_used?(ClassWithTaggedInstanceMethod, :some_instance_method)
 
       CruftTracker::CleanupUntrackedMethods.run!
 

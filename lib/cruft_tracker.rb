@@ -4,10 +4,18 @@ require 'cruft_tracker/registry'
 require 'cruft_tracker/log_suppressor'
 
 module CruftTracker
-  # Your code goes here...
+  def self.init(&block)
+    self.instance_eval(&block)
+  end
 
-  def self.is_this_view_used?
-    puts '>>>> is this view used?'
+  def self.is_this_view_used?(
+    view,
+    comment: nil
+  )
+    CruftTracker::TrackView.run!(
+      view: view,
+      comment: comment
+    )
   end
 
   def self.is_this_method_used?(

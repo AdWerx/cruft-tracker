@@ -18,5 +18,4 @@ class ClassWithMultipleBacktracesToTheSameTrackedMethod
   def tracked_method
     'I am tracked'
   end
-  CruftTracker.is_this_method_used? self, :tracked_method
 end

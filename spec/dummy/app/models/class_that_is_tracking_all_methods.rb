@@ -74,6 +74,4 @@ class ClassThatIsTrackingAllMethods < ClassWithUntrackedMethod
   def do_the_thing
     'I am tracked'
   end
-
-  CruftTracker.are_any_of_these_methods_being_used? self
 end

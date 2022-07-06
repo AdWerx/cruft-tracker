@@ -22,6 +22,4 @@ module ModuleThatIsTrackingAllMethods
   def self.do_something_super_privately
     super_private_method
   end
-
-  CruftTracker.are_any_of_these_methods_being_used? self
 end

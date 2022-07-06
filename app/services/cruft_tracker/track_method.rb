@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-# require 'cruft_tracker/record_invocation'
-# require 'cruft_tracker/record_backtrace'
 module CruftTracker
   class TrackMethod < CruftTracker::ApplicationService
     private

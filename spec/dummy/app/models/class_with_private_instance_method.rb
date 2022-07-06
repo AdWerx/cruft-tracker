@@ -10,6 +10,4 @@ class ClassWithPrivateInstanceMethod
   def some_private_method
     "Shhh! nobody knows I'm here!"
   end
-
-  CruftTracker.is_this_method_used? self, :some_private_method
 end
