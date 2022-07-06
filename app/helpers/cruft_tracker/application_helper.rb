@@ -1,8 +1,6 @@
 module CruftTracker
   module ApplicationHelper
     def record_cruft_tracker_view_render(metadata = {})
-      # TODO: should this helper create a view record if one doesn't already exist?
-
       CruftTracker::RecordViewRender.run!(
         view: cruft_tracker_view,
         controller: controller.class.to_s,
@@ -12,14 +10,15 @@ module CruftTracker
         metadata: metadata
       )
     rescue StandardError
-      # TODO: test that if errors occur that we swallow the error
       # Swallow errors
     end
 
     private
 
     def cruft_tracker_view
-      CruftTracker::View.find_by(view: render_stack.first[:path].gsub(/#{Rails.root}\//, ""))
+      CruftTracker::View.find_or_create_by(
+        view: render_stack.first[:path].gsub(/#{Rails.root}\//, "")
+      )
     end
 
     def route_path

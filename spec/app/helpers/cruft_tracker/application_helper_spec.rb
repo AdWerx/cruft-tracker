@@ -48,12 +48,22 @@ RSpec.describe CruftTracker::ApplicationHelper, type: :request do
       end
     end
 
-    context 'when an error occurs in tracking' do
-      it 'is suppressed' do
-        # The view record doesn't exist, which will raise an error and be swallowed
+    context 'when a view record does not already exist' do
+      it 'creates one' do
         expect do
           get number_path(123)
-        end.to change { CruftTracker::ViewRender.count }.by(0)
+        end.to change { CruftTracker::View.count }.by(1).
+          and(change  { CruftTracker::ViewRender.count }.by(1))
+      end
+    end
+
+    context 'when an error occurs in tracking' do
+      it 'is suppressed' do
+        allow(CruftTracker::RecordViewRender).to receive(:run!).and_raise("💣KABOOOOOOOOM!💥")
+
+        expect do
+          get number_path(123)
+        end.not_to raise_error
       end
     end
   end
