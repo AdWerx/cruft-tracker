@@ -1,6 +1,6 @@
 module CruftTracker
   module ApplicationHelper
-    def record_cruft_tracker_view_render(metadata = {})
+    def record_cruft_tracker_view_render(metadata = nil)
       CruftTracker::RecordViewRender.run!(
         view: cruft_tracker_view,
         controller: controller.class.to_s,

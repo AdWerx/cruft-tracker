@@ -486,7 +486,46 @@ There's a lot packed into that record. Let's disect it:
 
 ### Tracking View Render Metadata
 
-TODO: 
+Knowing what caused a view to render is all well and good, but sometimes you might want a little more insight. Similar to how you can track arguments on methods with CruftTracker, you can track metadata for views. This is simply an argument you provide to the `record_cruft_tracker_view_render`  method. For example:
+
+```erb
+<!-- app/views/shared/whatever.html.erb -->
+  
+<%- record_cruft_tracker_view_render(some_value) %>
+
+<div>I am a partial. Hear me roar.</div>
+
+<div><%= some_value %></div>
+```
+
+The metadata argument can be anything that is serializable to JSON. When you provide the argument, a record will be created or updated in the `cruft_tracker_render_metadata` table that looks like this:
+
+| id   | view_render_id | metadata_hash                    | metadata            | occurrences | created_at          | updated_at          |
+| ---- | -------------- | -------------------------------- | ------------------- | ----------- | ------------------- | ------------------- |
+| 1    | 1              | a434e71475ff330064970fdc9fb123fc | ...your metadata... | 1           | 2022-07-06 16:07:38 | 2022-07-06 16:07:38 |
+
+Let's break this down:
+
+* `id` - Ye olde primary key
+* `view_render_id` - This is the ID of the `CruftTracker::ViewRender` that this metadata is associated with.
+* `metadata_hash` - This is the hash of the `metadata` field so that we can easily create a unique index.
+* `occurrences` - The number of times that this exact metadata has been seen before.
+* `created_at` - The first time we saw this metadata.
+* `updated_at` - The most recent time we saw this metadata.
+
+`CruftTracker::RenderMetadata` can be accessed from a `CruftTracker::ViewRender` via its `render_metadata` association.
+
+A word of caution: don't track ever variable. Variables are, by definition, variable. Each time a view renders you could have a different value for a variable. Instead, this would be better used to track what variables are available. EG:
+
+```erb
+<!-- app/views/shared/whatever.html.erb -->
+  
+<%- record_cruft_tracker_view_render(instance_variables) %>
+
+<div>I am a partial. Hear me roar.</div>
+
+<div><%= some_value %></div>
+```
 
 ### Clean Up
 
