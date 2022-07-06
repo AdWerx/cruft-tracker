@@ -11,6 +11,7 @@ RSpec.describe CruftTracker::RecordRenderMetadata do
           controller: 'SomeController',
           endpoint: 'some_endpoint',
           route: '/foo',
+          http_method: 'POST',
           render_stack: []
         )
 
@@ -32,6 +33,7 @@ RSpec.describe CruftTracker::RecordRenderMetadata do
           controller: 'SomeController',
           endpoint: 'some_endpoint',
           route: '/foo',
+          http_method: 'DELETE',
           render_stack: []
         )
 
@@ -53,6 +55,7 @@ RSpec.describe CruftTracker::RecordRenderMetadata do
           controller: 'SomeController',
           endpoint: 'some_endpoint',
           route: '/foo',
+          http_method: 'PUT',
           render_stack: []
         )
         render_metadata = CruftTracker::RenderMetadata.create(

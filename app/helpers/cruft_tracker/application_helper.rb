@@ -6,6 +6,7 @@ module CruftTracker
         controller: controller.class.to_s,
         endpoint: action_name,
         route: route_path,
+        http_method: request.method,
         render_stack: render_stack,
         metadata: metadata
       )

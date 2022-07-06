@@ -6,6 +6,7 @@ module CruftTracker
     string :controller
     string :endpoint
     string :route
+    string :http_method
     array :render_stack do
       hash do
         string :path
@@ -51,6 +52,7 @@ module CruftTracker
             controller: controller,
             endpoint: endpoint,
             route: route,
+            http_method: http_method,
             render_stack: render_stack
           )
         rescue ActiveRecord::RecordNotUnique
@@ -64,6 +66,7 @@ module CruftTracker
           controller: controller,
           endpoint: endpoint,
           route: route,
+          http_method: http_method,
           render_stack: render_stack.to_json
         }.to_json
       )

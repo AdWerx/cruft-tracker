@@ -72,14 +72,17 @@ ActiveRecord::Schema.define(version: 2022_07_05_152409) do
     t.string "controller", null: false
     t.string "endpoint", null: false
     t.string "route", null: false
+    t.string "http_method", null: false
     t.json "render_stack", null: false
     t.integer "occurrences", default: 0, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["controller"], name: "index_cruft_tracker_view_renders_on_controller"
     t.index ["endpoint"], name: "index_cruft_tracker_view_renders_on_endpoint"
+    t.index ["http_method"], name: "index_cruft_tracker_view_renders_on_http_method"
     t.index ["occurrences"], name: "index_cruft_tracker_view_renders_on_occurrences"
     t.index ["render_hash"], name: "index_cruft_tracker_view_renders_on_render_hash"
+    t.index ["route"], name: "index_cruft_tracker_view_renders_on_route"
     t.index ["view_id", "render_hash"], name: "index_cruft_tracker_view_renders_on_view_id_and_render_hash", unique: true
     t.index ["view_id"], name: "index_cruft_tracker_view_renders_on_view_id"
   end

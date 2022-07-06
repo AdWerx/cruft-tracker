@@ -5,7 +5,8 @@ class CreateCruftTrackerViewRenders < ActiveRecord::Migration[5.2]
       t.string :render_hash, null: false, index: true, unique: true
       t.string :controller, null: false, index: true
       t.string :endpoint, null: false, index: true
-      t.string :route, null: false
+      t.string :route, null: false, index: true
+      t.string :http_method, null: false, index: true
       t.json :render_stack, null: false
       t.integer :occurrences, null: false, index: true, default: 0
 

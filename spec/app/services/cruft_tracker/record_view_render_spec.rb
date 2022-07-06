@@ -12,6 +12,7 @@ RSpec.describe CruftTracker::RecordViewRender do
             controller: 'SomeController',
             endpoint: 'show',
             route: '/some:id',
+            http_method: 'GET',
             render_stack:[
               {
                 path: "/app/views/some/show.html.erb",
@@ -27,6 +28,7 @@ RSpec.describe CruftTracker::RecordViewRender do
         expect(view_render.controller).to eq('SomeController')
         expect(view_render.endpoint).to eq('show')
         expect(view_render.route).to eq('/some:id')
+        expect(view_render.http_method).to eq('GET')
         expect(view_render.render_stack).to eq(
           [
              {
@@ -51,6 +53,7 @@ RSpec.describe CruftTracker::RecordViewRender do
               controller: 'SomeController',
               endpoint: 'show',
               route: '/some:id',
+              http_method: 'GET',
               render_stack:[
                 {
                   path: "/app/views/some/show.html.erb",
@@ -70,12 +73,13 @@ RSpec.describe CruftTracker::RecordViewRender do
       end
     end
 
-    context 'when the controller, endpoint, route, and render stack have been seen together before' do
+    context 'when the controller, endpoint, route, http_method, and render stack have been seen together before' do
       it 'increments the number of occurrences' do
         view = CruftTracker::View.create(view: '/some/show.html.erb')
         controller = 'SomeController'
         endpoint = 'show'
         route = '/some/:id'
+        http_method = 'GET'
         render_stack = [
           {
             path: "/app/views/some/show.html.erb",
@@ -89,6 +93,7 @@ RSpec.describe CruftTracker::RecordViewRender do
             controller: controller,
             endpoint: endpoint,
             route: route,
+            http_method: http_method,
             render_stack: render_stack.to_json
           }.to_json
         )
@@ -98,6 +103,7 @@ RSpec.describe CruftTracker::RecordViewRender do
           controller: controller,
           endpoint: endpoint,
           route: route,
+          http_method: http_method,
           render_stack: render_stack,
           occurrences: 123
         )
@@ -108,6 +114,7 @@ RSpec.describe CruftTracker::RecordViewRender do
             controller: controller,
             endpoint: endpoint,
             route: route,
+            http_method: http_method,
             render_stack: render_stack
           )
         end.to change { CruftTracker::ViewRender.count }.by(0)
@@ -117,6 +124,7 @@ RSpec.describe CruftTracker::RecordViewRender do
         expect(view_render.controller).to eq(controller)
         expect(view_render.endpoint).to eq(endpoint)
         expect(view_render.route).to eq(route)
+        expect(view_render.http_method).to eq(http_method)
         expect(view_render.render_stack).to eq(
           [
             {
@@ -137,6 +145,7 @@ RSpec.describe CruftTracker::RecordViewRender do
           controller = 'SomeController'
           endpoint = 'show'
           route = '/some/:id'
+          http_method = 'GET'
           render_stack = [
             {
               path: "/app/views/some/show.html.erb",
@@ -150,6 +159,7 @@ RSpec.describe CruftTracker::RecordViewRender do
               controller: controller,
               endpoint: endpoint,
               route: route,
+              http_method: http_method,
               render_stack: render_stack.to_json
             }.to_json
           )
@@ -159,6 +169,7 @@ RSpec.describe CruftTracker::RecordViewRender do
             controller: controller,
             endpoint: endpoint,
             route: route,
+            http_method: http_method,
             render_stack: render_stack,
             occurrences: 123
           )
@@ -176,6 +187,7 @@ RSpec.describe CruftTracker::RecordViewRender do
               controller: controller,
               endpoint: endpoint,
               route: route,
+              http_method: http_method,
               render_stack: render_stack,
               metadata: metadata
             )
