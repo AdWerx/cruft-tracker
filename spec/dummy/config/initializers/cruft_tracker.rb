@@ -1,8 +1,8 @@
 CruftTracker.init do
-  # TODO: add config options here such as:
-  # - max num of backtraces / arguments
-  # - max backtrace stack
-  # - filters for backtraces
+  config.max_argument_variations_per_tracked_method = 5
+  config.max_backtrace_variations_per_tracked_method = 5
+  config.max_view_renders_per_view = 5
+  config.max_render_metadata_variations_per_view_render = 5
 
   is_this_method_used?(
     ClassWithClassAndInstanceMethodsOfTheSameName,

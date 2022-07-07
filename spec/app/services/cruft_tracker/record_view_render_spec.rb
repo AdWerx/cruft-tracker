@@ -11,7 +11,7 @@ RSpec.describe CruftTracker::RecordViewRender do
             view: view,
             controller: 'SomeController',
             endpoint: 'show',
-            route: '/some:id',
+            route: '/some/:id',
             http_method: 'GET',
             render_stack: [
               {
@@ -30,7 +30,7 @@ RSpec.describe CruftTracker::RecordViewRender do
         expect(view_render.view).to eq(view)
         expect(view_render.controller).to eq('SomeController')
         expect(view_render.endpoint).to eq('show')
-        expect(view_render.route).to eq('/some:id')
+        expect(view_render.route).to eq('/some/:id')
         expect(view_render.http_method).to eq('GET')
         expect(view_render.render_stack).to eq(
           [
@@ -58,7 +58,7 @@ RSpec.describe CruftTracker::RecordViewRender do
                 view: view,
                 controller: 'SomeController',
                 endpoint: 'show',
-                route: '/some:id',
+                route: '/some/:id',
                 http_method: 'GET',
                 render_stack: [
                   {
@@ -215,6 +215,52 @@ RSpec.describe CruftTracker::RecordViewRender do
           end.to change { CruftTracker::RenderMetadata.count }.by(0)
         end
       end
+    end
+
+    it 'does not create more records than permitted by configuration' do
+      view1 = CruftTracker::View.create(view: '/some/show.html.erb')
+      view2 = CruftTracker::View.create(view: '/other/other.html.erb')
+      allow(CruftTracker::Config.instance).to receive(:max_view_renders_per_view).and_return(2)
+
+      4.times.each_with_index do |i|
+        CruftTracker::RecordViewRender.run!(
+          view: view1,
+          controller: "SomeController#{i}",
+          endpoint: 'show',
+          route: '/some/:id',
+          http_method: 'GET',
+          render_stack: [
+            {
+              path: '/app/views/some/show.html.erb',
+              label:
+                '_app_views_some_show_html_erb__1726455257671384410_11260',
+              lineno: 1,
+              base_label:
+                '_app_views_some_show_html_erb__1726455257671384410_11260'
+            }
+          ]
+        )
+      end
+      CruftTracker::RecordViewRender.run!(
+        view: view2,
+        controller: "OtherController",
+        endpoint: 'other',
+        route: '/other/:id',
+        http_method: 'GET',
+        render_stack: [
+          {
+            path: '/app/views/some/other.html.erb',
+            label:
+              '_app_views_other_show_html_erb__1726455257671384410_11260',
+            lineno: 1,
+            base_label:
+              '_app_views_other_show_html_erb__1726455257671384410_11260'
+          }
+        ]
+      )
+
+      expect(CruftTracker::ViewRender.where(view: view1).count).to eq(2)
+      expect(CruftTracker::ViewRender.where(view: view2).count).to eq(1)
     end
   end
 end

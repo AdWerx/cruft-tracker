@@ -9,6 +9,8 @@ module CruftTracker
     private
 
     def execute
+      return unless arguments_record.present?
+
       CruftTracker::LogSuppressor.suppress_logging do
         arguments_record.with_lock do
           arguments_record.reload
@@ -22,14 +24,20 @@ module CruftTracker
     def arguments_record
       @arguments_record ||=
         begin
+          return find_existing_arguments_record if max_records_reached?
+
           CruftTracker::Argument.create(
             method: method,
             arguments_hash: arguments_hash,
             arguments: transformed_arguments
           )
         rescue ActiveRecord::RecordNotUnique
-          CruftTracker::Argument.find_by(arguments_hash: arguments_hash)
+          find_existing_arguments_record
         end
+    end
+
+    def find_existing_arguments_record
+      CruftTracker::Argument.find_by(arguments_hash: arguments_hash)
     end
 
     def arguments_hash
@@ -38,6 +46,10 @@ module CruftTracker
 
     def transformed_arguments
       @transformed_arguments ||= transformer.call(arguments)
+    end
+
+    def max_records_reached?
+      CruftTracker::Argument.where(method: method).count >= CruftTracker.config.max_argument_variations_per_tracked_method
     end
   end
 end

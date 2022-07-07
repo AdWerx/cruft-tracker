@@ -1,12 +1,12 @@
 # CruftTracker
 
-Have you ever asked yourself, "Is this method even being used?!" Or, "What the heck is this method receiving?" Does your application use Rails? If the answers
+Have you ever asked yourself, "Is this method even being used?!" Or, "What the heck is this method receiving?" Or, perhaps, "is this partial being used?" Does your application use Rails? If the answers
 these questions are yes, this gem may be of use to you!
 
-Large applications can accrue cruft; old methods that might once have been important, but are now unused or code that is difficult to understand, but dangerous to refactor. Unfortunately,
+Large applications can accrue cruft; old methods that might once have been important, but are now unused, or code that is difficult to understand, but dangerous to refactor. The same is can be true for views and partials in Rails applications. Unfortunately,
 software is _complex_ and sometimes it's unclear what's really going on. This adds maintenance burdens, headaches, and uncertainty.
 
-This gem aims to give you a couple tools to make it easier to know what (and how) your code is being used (or not).
+This gem aims to give you some tools to make it easier to know what (and how) your code is being used (or not).
 
 CruftTracker supports Rails versions 5.2 to 6.1 at this time. As of now the gem only supports MySQL, but contributions for Postgres or other DBMS would be welcome.
 
@@ -37,6 +37,16 @@ After that, you can run migrations as you normally would. If you've previously i
 
 ## Usage
 
+### Rails Initializer
+
+You should configure CruftTracker by creating an initializer in your Rails application's `config/initializers` directory named `cruft_tracker.rb`. The structure of the initializer is:
+
+```ruby
+CruftTracker.init do
+  # your configuration.... (more on this below)
+end
+```
+
 ### Tracking method invocations
 
 CruftTracker is pretty simple. Let's say you have a class (or module) like this...
@@ -49,19 +59,17 @@ class SomeOldClass
 end
 ```
 
-You're unsure if the `some_old_method` method is actually being used. All you need to do is use `CruftTracker.is_this_method_used?`. This method requires you to pass `self` and a symbol to identify the name of the method to track. For example:
+You're unsure if the `some_old_method` method is actually being used. All you need to do is add an instance of the  `is_this_method_used? ` to the CruftTracker initializer. This method requires you to pass the class constant and a symbol to identify the name of the method to track. For example:
 
 ```ruby
-class SomeOldClass
-  def some_old_method
-    # do things
-  end
+# config/initializers/cruft_tracker.rb
 
-  CruftTracker.is_this_method_used? self, :some_old_method
+CruftTracker.init do
+  is_this_method_used? SomeOldClass, :some_old_method
 end
 ```
 
-What do you get out of this? Well, as soon as Ruby loads the `SomeOldClass` class, CruftTracker will create a new record
+What do you get out of this? Well, as soon as Rails runs the CruftTracker initializer, CruftTracker will create a new record
 in the `cruft_tracker_methods` table that looks like this:
 
 
@@ -85,30 +93,28 @@ The fields are:
 - `updated_at` - The last time this record was updated. IE: the last time the tracked method was invoked.
 
 Looking at this, we can see that the `some_old_method` method has never been invoked. This is nice because it means that
-you can track uses of methods without changing their behavior and also know when a method has _not_ been used. A similar record is created for every method you annotate
-with `CruftTracker.is_this_method_used?`.
+you can track uses of methods without changing their behavior (or editing their class) and also know when a method has _not_ been used. A similar record is created for every method you track
+with `is_this_method_used?`.
 
-Assuming your production application eagerly loads classes, you should always have records for potentially crufty
+You should always have records for potentially crufty
 methods, even if the class itself is never explicitly used.
 
-So, having annotated the method, you can check this table after a while. If you see that there have been zero invocations,
+So, having configured the method to be tracked, you can check this table after a while. If you see that there have been zero invocations,
 you have a reasonably good hint that the method may not actually be used. Of course, you should consider that there are
 some processes that are not run frequently at all, so this gem isn't a panacea. **Think before you delete!**
 
-`CruftTracker.is_this_method_used?` can be used to track any kind of method (except `initialize`) with any visibility. This includes class and module methods (`self.`), private class methods, eigenclass methods, as well as public, private, and protected instance methods.
+`is_this_method_used?` can be used to track any kind of method (except `initialize`) with any visibility. This includes class and module methods (`self.`), private class methods, eigenclass methods, as well as public, private, and protected instance methods.
 
 ### Comments
 
 Since you may have to track a method for a while, it might be helpful to have a reminder as to _why_ you're tracking it in the first place. This can be recorded by providing an optional `comments:` named argument. For example:
 
 ```ruby
-class SomeOldClass
-  def some_old_method
-    # do things
-  end
+# config/initializers/cruft_tracker.rb
 
-  CruftTracker.is_this_method_used?
-    self,
+CruftTracker.init do
+  is_this_method_used?
+    SomeOldClass,
     :some_old_method,
     comment: "I suspect this method is being called via metaprogramming."
 end
@@ -117,13 +123,11 @@ end
 `comment:` can be anything that can be serialized to JSON. For example:
 
 ```ruby
-class SomeOldClass
-  def some_old_method
-    # do things
-  end
+# config/initializers/cruft_tracker.rb
 
-  CruftTracker.is_this_method_used?
-    self,
+CruftTracker.init do
+  is_this_method_used?
+    SomeOldClass,
     :some_old_method,
     comment: {
       creator: "Doug Hughes",
@@ -139,7 +143,7 @@ The comment is serialized to json and stored in the `comments` field of the `Cru
 By default, CruftTracker will record unique backtraces for each invocation of a tracked method. This data is stored in the `cruft_tracker_backtraces` table and is accessible via the `CruftTracker::Method`'s `backtraces` association. The `cruft_tracker_backtraces` table has the following columns:
 
 - `id` - Ye olde primary key.
-- `traceable_type` - The type for the polymorphic `traceable` association. Future versions of CruftTracker may track data in addition to method invocations.
+- `traceable_type` - The type for the polymorphic `traceable` association. Future versions of CruftTracker may track data in addition to method invocations. (Note: This was originally made polymorphic to support view tracking. Since view tracking can't use the backtraces feature, the polymorphism is vestigial and may be removed in the future.)
 - `traceable_id` - The ID of the polymorphic `traceable` association. EG: the `CruftTracker::Method` the backtrace is recorded for.
 - `trace_hash` - Traces are stored as JSON. This column is an MD5 hash of the trace that is indexed to make it easier / faster to know if we've seen a particular trace before.
 - `trace` - The trace data, stored as a JSON array of hashes.
@@ -147,7 +151,7 @@ By default, CruftTracker will record unique backtraces for each invocation of a 
 - `created_at` - The first time we saw a particular backtrace.
 - `updated_at` - The most recent time we saw a particular backtrace.
 
-Backtraces can be referenced to figure out exactly where a tracked method is being used. It also implicitly tells you other code that is definitely being used. Do note that as code changes, these record backtraces are not updated. So, if a backtrace says the tracked method was invoked from line 123 of some file, if that file is edited, the line numbers may no longer match. Also, this would be record as a new backtrace.
+Backtraces can be referenced to figure out exactly where a tracked method is being used. It also implicitly tells you other code that is definitely being used. Do note that as code changes, these backtrace records are not updated. So, if a backtrace says the tracked method was invoked from line 123 of some file, if that file is edited, the line numbers may no longer match and would be recorded as a new backtrace.
 
 Future versions of CruftTracker may provide a UI for exploring backtraces.
 
@@ -185,42 +189,36 @@ Now, I ask you a few questions:
 2. What options does `do_something_via_metaprogramming` receive? Are they always the same options?
 3. What classes and methods does `do_something_via_metaprogramming` invoke via metaprogramming?
 
-The answer: _Who the heck knows?!_ 🤷
+The answers: _Who the heck knows?!_ 🤷
 
 So, let's start collecting some data about these arguments. We can do this with the `track_arguments:` named argument on `is_this_method_used?`. This argument takes a proc that receives an `args` array as an argument. Whatever the proc returns is serialized to JSON and stored in the `cruft_tracker_arguments` table.
 
 The naive approach to tracking arguments would be to use something like this:
 
 ```ruby
-class SomeClass
-  def do_something_via_metaprogramming(options)
-    options[:target_class].constantize.send(options[:method], options[:modifiers])
-    YetAnotherClass.do_something_else(options)
-  end
+# config/initializers/cruft_tracker.rb
 
-  CruftTracker.is_this_method_used?
-    self,
+CruftTracker.init do
+  is_this_method_used?
+    SomeClass,
     :do_something_via_metaprogramming,
     track_arguments: -> (args) { args }
 end
 ```
 
-This will track all of the values of the options provided to the `do_something_via_metaprogramming` method. This could be a problem. Consider a case where the method is used a zillion times per day and where there's a plethora of complicated data being passed through the method via its `options` argument. It's possible that each set of arguments is different. This could result in one `potential_cruft_arguments` record per invocation of the tracked method. This is both probably not what. What you probably want to know in this case is:
+This will track all of the values of the options provided to the `do_something_via_metaprogramming` method. This could be a problem. Consider a case where the method is used a zillion times per day and where there's a plethora of complicated data being passed through the method via its `options` argument. It's possible that each set of arguments is different. This could result in one `potential_cruft_arguments` record per invocation of the tracked method. This may not be what you want to know... What you probably want to know in this case is:
 
 - What are the unique sets of keys in the `options` hash?
 - What classes and methods are we calling via metaprogramming?
 
-We could write a proc that looks like this:
+Instead, we could write a proc that looks like this:
 
 ```ruby
-class SomeClass
-  def do_something_via_metaprogramming(options)
-    options[:target_class].constantize.send(options[:method], options[:modifiers])
-    YetAnotherClass.do_something_else(options)
-  end
+# config/initializers/cruft_tracker.rb
 
-  CruftTracker.is_this_method_used?
-    self,
+CruftTracker.init do
+  is_this_method_used?
+    SomeClass,
     :do_something_via_metaprogramming,
     track_arguments: -> (args) do
       options = args.first
@@ -306,9 +304,11 @@ Arguments are tracked in the `cruft_tracker_arguments` table which has these col
 - `updated_at` - The most recent time we saw a particular set of arguments.
 
 
-### Tracking Everything
+### Tracking All Methods
 
-So, let's say you've got a class with a bunch of methods. You want to know if any of the methods are being used, and you just don't want to think very hard about it. That's where `CruftTracker.are_any_of_these_methods_being_used?` comes to the rescue! Just tack that onto the end of your class like this to track all method invocations:
+So, let's say you've got a class with a bunch of methods. You want to know if any of the methods are being used, and you just don't want to think very hard about it. That's where `are_any_of_these_methods_being_used?` comes to the rescue! Just add this to the CruftTracker initializer as shown below.
+
+Let's say this is your class:
 
 ```ruby
 class SomeClass
@@ -328,18 +328,236 @@ class SomeClass
   end
 
   # ... other methods ...
+end
+```
 
-  CruftTracker.are_any_of_these_methods_being_used? self
+Here's the configuration in the initializer:
+
+```ruby
+# config/initializers/cruft_tracker.rb
+
+CruftTracker.init do
+  are_any_of_these_methods_being_used? SomeClass
 end
 ```
 
 This will result in a `cruft_tracker_methods` record being created for each method in the `SomeClass` class. It will _not_ track methods that exist in the class' (or module's) ancestors. It's a quick and easy way to see what's being used. This method cannot be used to track arguments, though it does accept a `comments:` named argument.
 
-You may want to think twice about using this method, or using this method too widely as it may create more data than you expect. CruftTracker is lightweight, but too much of a good thing is still too much. Generally, you should favor being targeted in your tracking.
+You may want to think twice about using this method, or using this method too widely as it may create more data than you expect. CruftTracker is lightweight, but too much of a good thing is still too much. Generally, you should favor tracking only what you are specifically interested in.
+
+### Tracking Views
+
+In additon to tracking methods, CruftTracker lets you track details about view rendering. Consider this scenario: You have a large legacy application with a ton views and partials. Over time your controllers have been changed and sometimes deleted. Perhaps a partial was once widely used, but isn't anymore. You might want to be able to easily tell if a given partial or view is being used. Once again, CruftTracker to the rescue!
+
+Let's say you have this view and you're just not sure it's being used anymore:
+
+```erb
+<!-- app/views/something/some_view.html.erb -->
+  
+<div>
+	<%- if @data.present? %>
+  	<strong>Woo hoo!</strong>
+  <% end %>
+</div>
+```
+
+You can track renders of this view by using `is_this_view_used?` in the CruftTracker initializer:
+
+```ruby
+# config/initializers/cruft_tracker.rb
+
+CruftTracker.init do
+  is_this_view_used? 'app/views/something/some_view.html.erb'
+end
+```
+
+Note that the path provided is from the application's root.
+
+As soon as Rails runs the CruftTracker initializer, CruftTracker will create a new record
+in the `cruft_tracker_views` table that looks like this:
+
+
+| id   | view                                   | renders | comment | deleted_at | created_at          | updated_at          |
+| ---- | -------------------------------------- | ------- | ------- | ---------- | ------------------- | ------------------- |
+| 1    | app/views/something/some_view.html.erb | 0       | null    | null       | 2022-01-21 14:07:48 | 2022-01-21 14:07:48 |
+
+This record is accessible using the `CruftTracker::View` model. EG: `CruftTracker::View.find(1)`
+
+The fields are:
+
+- `id` - Shockingly, this is the primary key.
+- `view` - This is the path to the view from the Rails application's root.
+- `renders` - The number of times the view has been rendered.
+- `comments` -  This is a JSON field containing extra data provided to the option `comments:` argument for the `is_this_view_used?` method.
+- `deleted_at` - When set, this indicates that the view is no longer being tracked.
+- `created_at` - The date/time we started tracking the view.
+- `updated_at` - The last time this record was updated. IE: the last time the tracked view was rendered.
+
+Looking at this, we can see that the `app/views/something/some_view.html.erb` view has never been rendered. This is nice because it means that
+you can track renders of views, but you can and also know when a view has _not_ been rendered. A similar record is created for every view you track
+with `is_this_view_used?` You should always have records for potentially crufty
+views, even if the view itself is never rendered.
+
+So, having configured the view to be tracked, you can check this table after a while. If you see that there have been zero renders,
+you have a reasonably good hint that the view may not actually be used. Of course, some things aren't used frequently. **Think before you delete!**
+
+`is_this_view_used?` can be used to track ordinary views as well as partials. While only tested with ERB templates, it should work with any other template engine, such as HAML. If you run into problems, please open a Github issue!
+
+### Tracking View Rendering Details
+
+Out of the box, you don't get a lot of information when tracking views. Basically, all you know is the number of times a view has been rendered. That's helpful, but not exactly amazing. Happily, CruftTracker provides a view helper that can be used to track a lot more information about view renders. The only downside is that it requires you to add a line of code to your templates. 
+
+Let's say you have this partial and you want to know not just if it's used, but _what uses it_.
+
+```erb
+<!-- app/views/shared/whatever.html.erb -->
+
+<div>I am a partial. Hear me roar.</div>
+
+<div><%= some_value %></div>
+```
+
+You'll still want to configure view tracking in the initializer:
+
+```ruby
+# config/initializers/cruft_tracker.rb
+
+CruftTracker.init do
+  is_this_view_used? 'app/views/shared/whatever.html.erb'
+end
+```
+
+However, to get additional details about renders of this partial, you can invoke the `record_cruft_tracker_view_render` helper into the view. It's recommended to add this on the first line of the view. EG:
+
+```erb
+<!-- app/views/shared/whatever.html.erb -->
+  
+<%- record_cruft_tracker_view_render %>
+
+<div>I am a partial. Hear me roar.</div>
+
+<div><%= some_value %></div>
+```
+
+When the view is actually rendered, CruftTracker will collect information about the render and store it in the `cruft_tracker_view_renders` table, like this:
+
+| id   | view_id | render_hash                      | controller     | endpoint     | route                  | render_stack | occurrences | created_at          | updated_at          |
+| ---- | ------- | -------------------------------- | -------------- | ------------ | ---------------------- | ------------ | ----------- | ------------------- | ------------------- |
+| 1    | 1       | 98cc3bd79cf6f3606c5afe3b9faf925b | SomeController | do_something | /foo/:id/bar(.:format) | [{...}]      | 1           | 2022-07-06 15:29:06 | 2022-07-06 15:29:06 |
+
+This record is represented by the `CruftTracker::ViewRender` model and can be loaded in the usual ways. You can also access it from a specific view record. EG: `CruftTracker::View.find(1).view_renders`, which will return an association of unique renders.
+
+There's a lot packed into that record. Let's disect it:
+
+* `id` - This is the primary key for the view render.
+
+* `view_id` - This is the id of the view that was rendered. 
+
+* `render_hash` - This is the MD5 hash of the combination of the `controller`, `endpoint`, `route`, `http_method`, and the JSON version of the `render_stack`. The combination of these fields must be unique so that we can count the number of occurrences. The `render_hash` is a shortcut used by CruftTracker to easily determine if the combination of these items is unique. Basically, it's for optimization purposes and you shouldn't worry about it. :wink:
+
+* `controller` - This is the class name for the controller that ultimately triggered rendering this view. Note that this controller is what kicked off the render, not necessarily what directly caused the view to be rendered. In the case of a partial, you could have a deeply nested set of renders. All the `controller` tells you is that a request to the controller ultimately caused the view to be rendered.
+
+* `endpoint` - This is the method within the controller that caused the view to be rendered. The same caveats apply as with `controller`.
+
+* `route` - This is the generic route that caused the view to be rendered. Note that this doesn't include the IDs, but the route's pattern for the IDs.
+
+* `http_method` - This is the HTTP method used to access the `endpoint`.
+
+* `render_stack` - This is an array that is _similar_ to a backtrace, but isn't actually a backtrace. To explain, if you call `render` in a controller, Rails doesn't actually render the view at that time. Instead, it ensues the view for rendering once the controller's method has finished executing. That means that if, while the view is rendering, you call invoke Ruby's `caller_locations`, you wouldn't see the controller that triggered the render. It was decided that this was generally pretty useless. Instead, what this field stores is the hierarchy of views / partials being rendered, but none of the other related code. It can provide a hint of how a deeply nested partial is rendered. Here's an example that shows a partial being rendered from a regular view: 
+
+  ```ruby
+  [
+    { "path": "/app/spec/dummy/app/views/shared/_whatever.html.erb", 
+      "label": "_app_views_shared__whatever_html_erb___436643032048620150_11500", 
+      "lineno": 1, 
+      "base_label": "_app_views_shared__whatever_html_erb___436643032048620150_11500" }, 
+    { "path": "/app/spec/dummy/app/views/main/show.html.erb", 
+      "label": "_app_views_main_show_html_erb__2350809826889573468_11260", 
+      "lineno": 6, 
+      "base_label": "_app_views_main_show_html_erb__2350809826889573468_11260"}
+  ]
+  ```
+
+* `occurrences` - This is the number of times that this particular set of details have been seen when rendering a particular view.
+
+* `created_at` - The date/time we first saw this controller, endpoint, route, etc render the view.
+
+* `updated_at` - The last time we first saw this controller, endpoint, route, etc render the view.
+
+### Tracking View Render Metadata
+
+Knowing what caused a view to render is all well and good, but sometimes you might want a little more insight. Similar to how you can track arguments on methods with CruftTracker, you can track metadata for views. This is simply an argument you provide to the `record_cruft_tracker_view_render`  method. For example:
+
+```erb
+<!-- app/views/shared/whatever.html.erb -->
+  
+<%- record_cruft_tracker_view_render(some_value) %>
+
+<div>I am a partial. Hear me roar.</div>
+
+<div><%= some_value %></div>
+```
+
+The metadata argument can be anything that is serializable to JSON. When you provide the argument, a record will be created or updated in the `cruft_tracker_render_metadata` table that looks like this:
+
+| id   | view_render_id | metadata_hash                    | metadata            | occurrences | created_at          | updated_at          |
+| ---- | -------------- | -------------------------------- | ------------------- | ----------- | ------------------- | ------------------- |
+| 1    | 1              | a434e71475ff330064970fdc9fb123fc | ...your metadata... | 1           | 2022-07-06 16:07:38 | 2022-07-06 16:07:38 |
+
+Let's break this down:
+
+* `id` - Ye olde primary key
+* `view_render_id` - This is the ID of the `CruftTracker::ViewRender` that this metadata is associated with.
+* `metadata_hash` - This is the hash of the `metadata` field so that we can easily create a unique index.
+* `occurrences` - The number of times that this exact metadata has been seen before.
+* `created_at` - The first time we saw this metadata.
+* `updated_at` - The most recent time we saw this metadata.
+
+`CruftTracker::RenderMetadata` can be accessed from a `CruftTracker::ViewRender` via its `render_metadata` association.
+
+A word of caution: don't track ever variable. Variables are, by definition, variable. Each time a view renders you could have a different value for a variable. Instead, this would be better used to track what variables are available. EG:
+
+```erb
+<!-- app/views/shared/whatever.html.erb -->
+  
+<%- record_cruft_tracker_view_render(instance_variables) %>
+
+<div>I am a partial. Hear me roar.</div>
+
+<div><%= some_value %></div>
+```
 
 ### Clean Up
 
-CruftTacker automatically cleans up after itself. ✨🧹 If you remove an instance of `CruftTracker.is_this_method_used?` to stop tracking a method, CruftTracker will recognize this when your application starts up and mark the associated `cruft_tracker_methods` record as deleted. But, only in environments where eager loading is enabled.
+CruftTacker automatically cleans up after itself. ✨🧹 If you remove any configured tracking, CruftTracker will recognize this when your application starts up and mark the associated `cruft_tracker_methods` record as deleted. 
+
+## Configuration
+
+Imagine a scenario where you have a method or view that is used in many places, or maybe as a result of metaprogramming. Perhaps you have some logic that is user-configurable and might lead to a tracked method being called with any number of backtraces. It's not super helpful to track all possible backtraces and it's actively bad, since it wastes space in your database and slows down queries. Besides, it's no fun drinking from the firehose.
+
+CruftTracker provides a few configurable settings to control the amount of data recorded in some of its tables. 
+
+| Name                                             | Default | Description                                                  |
+| ------------------------------------------------ | ------- | ------------------------------------------------------------ |
+| `max_argument_variations_per_tracked_method`     | 50      | Sets the maximum number of distinct arguments that can be recorded for any tracked method. |
+| `max_backtrace_variations_per_tracked_method`    | 50      | Sets the maximum number of distinct backtraces that can be recorded for any tracked method. |
+| `max_view_renders_per_view`                      | 50      | Sets the maximum number of distinct renders that can be recorded for any tracked view. |
+| `max_render_metadata_variations_per_view_render` | 50      | Sets the maximum number of distinct render metadata records that can be recorded for any specific render of a view. |
+
+These configuration values can be set within the CruftTracker initializer like this:
+
+```ruby
+# config/initializers/cruft_tracker.rb
+
+CruftTracker.init do
+  config.max_argument_variations_per_tracked_method = 20
+  config.max_backtrace_variations_per_tracked_method = 25
+  config.max_view_renders_per_view = 30
+  config.max_render_metadata_variations_per_view_render = 35
+  
+  # ... your configuration for tracking methods or views ...
+end
+```
 
 ## API Docs
 
@@ -369,10 +587,10 @@ Returns an array of `CruftTracker::Method` instances.
 
 ##### Arguments
 
-| Name                     | Type                                    | Required? | Default | Description                                                                                                                                                                                                  |
-| ------------------------ | --------------------------------------- | --------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| owner (positional)       | a class or module constant              | yes       | N/A     | A reference to the class or module that owns the method. Set this to `self`.                                                                                                                                 |
-| comment: (named)         | anything that can be serialized to json | no        | nil     | Arbitrary data you want to include with the `cruft_tracker_methods` record. For example, a note about why the method is being tracked or a hash with keys indicating who is tracking the method and and why. |
+| Name               | Type                                    | Required? | Default | Description                                                  |
+| ------------------ | :-------------------------------------- | --------- | ------- | ------------------------------------------------------------ |
+| owner (positional) | a class or module constant              | yes       | N/A     | A reference to the class or module that owns the method. Set this to `self`. |
+| comment: (named)   | anything that can be serialized to json | no        | nil     | Arbitrary data you want to include with the `cruft_tracker_methods` record. For example, a note about why the method is being tracked or a hash with keys indicating who is tracking the method and and why. |
 
 ## Developing
 
@@ -457,9 +675,9 @@ gem push cruft_tracker-x.y.z.gem
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/AdWerx/cruft-tracker
+Bug reports and pull requests are welcome on GitHub at https://github.com/AdWerx/cruft-tracker.
 
-Contributions should use Prettier to format Ruby code. You can run Prettier in Docker with `bundle exec rbprettier --write '**/*.rb'`. Contributions must have tests covering any new features. All unit tests must pass for all supported versions of Rails.
+Contributions should use Prettier to format Ruby code and must have tests covering any new features. All unit tests must pass for all supported versions of Rails.
 
 ## License
 
