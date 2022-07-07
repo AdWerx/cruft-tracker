@@ -17,5 +17,17 @@ RSpec.describe(CruftTracker::RecordBacktrace) do
       expect(CruftTracker::Backtrace.count).to eq(1)
       expect(CruftTracker::Backtrace.first.occurrences).to eq(1)
     end
+
+    it 'does not create more records than permitted by configuration' do
+      CruftTracker.is_this_method_used?(ClassWithHashComment, :some_method)
+      allow(CruftTracker::Config.instance).to receive(:max_backtrace_variations_per_tracked_method).and_return(2)
+
+      ClassWithHashComment.new.some_method
+      ClassWithHashComment.new.some_method
+      ClassWithHashComment.new.some_method
+      ClassWithHashComment.new.some_method
+
+      expect(CruftTracker::Backtrace.count).to eq(2)
+    end
   end
 end

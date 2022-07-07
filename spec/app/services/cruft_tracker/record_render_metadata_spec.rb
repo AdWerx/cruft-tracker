@@ -86,5 +86,48 @@ RSpec.describe CruftTracker::RecordRenderMetadata do
         end.not_to change { CruftTracker::RenderMetadata.count }
       end
     end
+
+    it 'does not create more records than permitted by configuration' do
+      view = CruftTracker::View.create(view: 'some/view.html.erb')
+      view_render1 =
+        CruftTracker::ViewRender.create(
+          view: view,
+          render_hash: '123',
+          controller: 'SomeController',
+          endpoint: 'some_endpoint',
+          route: '/foo',
+          http_method: 'DELETE',
+          render_stack: []
+        )
+      view_render2 =
+        CruftTracker::ViewRender.create(
+          view: view,
+          render_hash: '234',
+          controller: 'OtherController',
+          endpoint: 'other_endpoint',
+          route: '/bar',
+          http_method: 'PUT',
+          render_stack: []
+        )
+      allow(CruftTracker::Config.instance).to receive(:max_render_metadata_variations_per_view_render).and_return(2)
+
+      4.times do
+        CruftTracker::RecordRenderMetadata.run!(
+          view_render: view_render1,
+          metadata: {
+            uuid: SecureRandom.uuid
+          }
+        )
+      end
+      CruftTracker::RecordRenderMetadata.run!(
+        view_render: view_render2,
+        metadata: {
+          static_value: "A horse walks into a bar..."
+        }
+      )
+
+      expect(CruftTracker::RenderMetadata.where(view_render: view_render1).count).to eq(2)
+      expect(CruftTracker::RenderMetadata.where(view_render: view_render2).count).to eq(1)
+    end
   end
 end

@@ -20,6 +20,8 @@ module CruftTracker
     private
 
     def execute
+      return unless view_render_record.present?
+
       CruftTracker::LogSuppressor.suppress_logging do
         view.with_lock do
           view.reload
@@ -50,6 +52,8 @@ module CruftTracker
     def view_render_record
       @view_render_record ||=
         begin
+          return find_existing_view_render_record if max_records_reached?
+
           CruftTracker::ViewRender.create(
             view: view,
             render_hash: render_hash,
@@ -60,8 +64,12 @@ module CruftTracker
             render_stack: render_stack
           )
         rescue ActiveRecord::RecordNotUnique
-          CruftTracker::ViewRender.find_by(render_hash: render_hash)
+          find_existing_view_render_record
         end
+    end
+
+    def find_existing_view_render_record
+      CruftTracker::ViewRender.find_by(render_hash: render_hash)
     end
 
     def render_hash
@@ -74,6 +82,10 @@ module CruftTracker
           render_stack: render_stack.to_json
         }.to_json
       )
+    end
+
+    def max_records_reached?
+      CruftTracker::ViewRender.where(view: view).count >= CruftTracker.config.max_view_renders_per_view
     end
   end
 end

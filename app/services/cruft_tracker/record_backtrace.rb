@@ -7,6 +7,8 @@ module CruftTracker
     private
 
     def execute
+      return unless backtrace_record.present?
+
       CruftTracker::LogSuppressor.suppress_logging do
         backtrace_record.with_lock do
           backtrace_record.reload
@@ -20,14 +22,20 @@ module CruftTracker
     def backtrace_record
       @backtrace_record ||=
         begin
+          return find_existing_backtrace_record if max_records_reached?
+
           CruftTracker::Backtrace.create(
             traceable: method,
             trace_hash: backtrace_hash,
             trace: filtered_backtrace
           )
         rescue ActiveRecord::RecordNotUnique
-          CruftTracker::Backtrace.find_by(trace_hash: backtrace_hash)
+          find_existing_backtrace_record
         end
+    end
+
+    def find_existing_backtrace_record
+      CruftTracker::Backtrace.find_by(trace_hash: backtrace_hash)
     end
 
     def backtrace_hash
@@ -50,6 +58,10 @@ module CruftTracker
             lineno: location.lineno
           }
         end
+    end
+
+    def max_records_reached?
+      CruftTracker::Backtrace.where(traceable: method).count >= CruftTracker.config.max_backtrace_variations_per_tracked_method
     end
   end
 end
