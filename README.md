@@ -47,6 +47,16 @@ CruftTracker.init do
 end
 ```
 
+Note: you may need to wrap the `CruftTracker.init` call in `Rails.application.reloader.to_prepare` to prevent deprecation warnings related to autoloading constants during initialization. For example:
+
+```ruby
+Rails.application.reloader.to_prepare do
+  CruftTracker.init do
+    # your configuration.... (more on this below)
+  end
+end
+```
+
 ### Tracking method invocations
 
 CruftTracker is pretty simple. Let's say you have a class (or module) like this...
@@ -355,7 +365,7 @@ Let's say you have this view and you're just not sure it's being used anymore:
 <!-- app/views/something/some_view.html.erb -->
   
 <div>
-	<%- if @data.present? %>
+  <%- if @data.present? %>
   	<strong>Woo hoo!</strong>
   <% end %>
 </div>
