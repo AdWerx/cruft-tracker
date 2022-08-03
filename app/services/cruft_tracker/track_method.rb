@@ -77,17 +77,19 @@ module CruftTracker
     end
 
     def create_or_find_method_record
+      method_record = CruftTracker::Method.find_by(
+        owner: owner.name,
+        name: name,
+        method_type: method_type
+      )
+
+      return method_record if method_record.present?
+
       CruftTracker::Method.create(
         owner: owner.name,
         name: name,
         method_type: method_type,
         comment: comment
-      )
-    rescue ActiveRecord::RecordNotUnique
-      CruftTracker::Method.find_by(
-        owner: owner.name,
-        name: name,
-        method_type: method_type
       )
     end
 

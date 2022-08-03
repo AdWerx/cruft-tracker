@@ -24,20 +24,21 @@ module CruftTracker
     def arguments_record
       @arguments_record ||=
         begin
-          return find_existing_arguments_record if max_records_reached?
+          arguments_record = CruftTracker::Argument.find_by(
+            method: method,
+            arguments_hash: arguments_hash
+          )
+
+          if arguments_record.present? || max_records_reached?
+            return arguments_record
+          end
 
           CruftTracker::Argument.create(
             method: method,
             arguments_hash: arguments_hash,
             arguments: transformed_arguments
           )
-        rescue ActiveRecord::RecordNotUnique
-          find_existing_arguments_record
         end
-    end
-
-    def find_existing_arguments_record
-      CruftTracker::Argument.find_by(arguments_hash: arguments_hash)
     end
 
     def arguments_hash

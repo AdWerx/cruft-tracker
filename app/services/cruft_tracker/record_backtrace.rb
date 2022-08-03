@@ -22,20 +22,21 @@ module CruftTracker
     def backtrace_record
       @backtrace_record ||=
         begin
-          return find_existing_backtrace_record if max_records_reached?
+          backtrace_record = CruftTracker::Backtrace.find_by(
+            traceable: method,
+            trace_hash: backtrace_hash
+          )
+
+          if backtrace_record.present? || max_records_reached?
+            return backtrace_record
+          end
 
           CruftTracker::Backtrace.create(
             traceable: method,
             trace_hash: backtrace_hash,
             trace: filtered_backtrace
           )
-        rescue ActiveRecord::RecordNotUnique
-          find_existing_backtrace_record
         end
-    end
-
-    def find_existing_backtrace_record
-      CruftTracker::Backtrace.find_by(trace_hash: backtrace_hash)
     end
 
     def backtrace_hash

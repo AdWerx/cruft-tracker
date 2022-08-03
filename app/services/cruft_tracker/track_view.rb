@@ -52,9 +52,11 @@ module CruftTracker
     end
 
     def create_or_find_view_record
+      view_record = CruftTracker::View.find_by(view: view)
+
+      return view_record if view_record.present?
+
       CruftTracker::View.create(view: view, comment: comment)
-    rescue ActiveRecord::RecordNotUnique
-      CruftTracker::View.find_by(view: view)
     end
   end
 end

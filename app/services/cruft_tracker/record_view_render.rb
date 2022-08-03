@@ -52,7 +52,14 @@ module CruftTracker
     def view_render_record
       @view_render_record ||=
         begin
-          return find_existing_view_render_record if max_records_reached?
+          view_render_record = CruftTracker::ViewRender.find_by(
+            view: view,
+            render_hash: render_hash
+          )
+
+          if view_render_record.present? || max_records_reached?
+            return view_render_record
+          end
 
           CruftTracker::ViewRender.create(
             view: view,
@@ -63,13 +70,7 @@ module CruftTracker
             http_method: http_method,
             render_stack: render_stack
           )
-        rescue ActiveRecord::RecordNotUnique
-          find_existing_view_render_record
         end
-    end
-
-    def find_existing_view_render_record
-      CruftTracker::ViewRender.find_by(render_hash: render_hash)
     end
 
     def render_hash
