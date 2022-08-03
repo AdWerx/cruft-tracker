@@ -25,20 +25,21 @@ module CruftTracker
     def render_metadata_record
       @render_metadata_record ||=
         begin
-          return find_existing_render_metadata_record if max_records_reached?
+          render_metadata_record = CruftTracker::RenderMetadata.find_by(
+            view_render: view_render,
+            metadata_hash: metadata_hash
+          )
+
+          if render_metadata_record.present? || max_records_reached?
+            return render_metadata_record
+          end
 
           CruftTracker::RenderMetadata.create(
             view_render: view_render,
             metadata_hash: metadata_hash,
             metadata: metadata
           )
-        rescue ActiveRecord::RecordNotUnique
-          find_existing_render_metadata_record
         end
-    end
-
-    def find_existing_render_metadata_record
-      CruftTracker::RenderMetadata.find_by(metadata_hash: metadata_hash)
     end
 
     def metadata_hash
