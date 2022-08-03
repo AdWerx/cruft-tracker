@@ -20,9 +20,9 @@ module CruftTracker
     private
 
     def execute
-      return unless view_render_record.present?
-
       CruftTracker::LogSuppressor.suppress_logging do
+        return unless view_render_record.present?
+
         view.with_lock do
           view.reload
           view.update(renders: view.renders + 1)

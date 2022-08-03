@@ -7,9 +7,9 @@ module CruftTracker
     private
 
     def execute
-      return unless backtrace_record.present?
-
       CruftTracker::LogSuppressor.suppress_logging do
+        return unless backtrace_record.present?
+        
         backtrace_record.with_lock do
           backtrace_record.reload
           backtrace_record.update(occurrences: backtrace_record.occurrences + 1)
