@@ -9,9 +9,9 @@ module CruftTracker
     private
 
     def execute
-      return unless arguments_record.present?
-
       CruftTracker::LogSuppressor.suppress_logging do
+        return unless arguments_record.present?
+
         arguments_record.with_lock do
           arguments_record.reload
           arguments_record.update(occurrences: arguments_record.occurrences + 1)

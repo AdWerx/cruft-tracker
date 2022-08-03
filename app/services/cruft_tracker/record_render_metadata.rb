@@ -10,9 +10,10 @@ module CruftTracker
 
     def execute
       return unless metadata.present?
-      return unless render_metadata_record.present?
 
       CruftTracker::LogSuppressor.suppress_logging do
+        return unless render_metadata_record.present?
+        
         render_metadata_record.with_lock do
           render_metadata_record.reload
           render_metadata_record.update(
