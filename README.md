@@ -1,5 +1,7 @@
 # CruftTracker
 
+> **Archived**
+
 Have you ever asked yourself, "Is this method even being used?!" Or, "What the heck is this method receiving?" Or, perhaps, "is this partial being used?" Does your application use Rails? If the answers
 these questions are yes, this gem may be of use to you!
 
@@ -363,7 +365,7 @@ Let's say you have this view and you're just not sure it's being used anymore:
 
 ```erb
 <!-- app/views/something/some_view.html.erb -->
-  
+
 <div>
   <%- if @data.present? %>
   	<strong>Woo hoo!</strong>
@@ -415,7 +417,7 @@ you have a reasonably good hint that the view may not actually be used. Of cours
 
 ### Tracking View Rendering Details
 
-Out of the box, you don't get a lot of information when tracking views. Basically, all you know is the number of times a view has been rendered. That's helpful, but not exactly amazing. Happily, CruftTracker provides a view helper that can be used to track a lot more information about view renders. The only downside is that it requires you to add a line of code to your templates. 
+Out of the box, you don't get a lot of information when tracking views. Basically, all you know is the number of times a view has been rendered. That's helpful, but not exactly amazing. Happily, CruftTracker provides a view helper that can be used to track a lot more information about view renders. The only downside is that it requires you to add a line of code to your templates.
 
 Let's say you have this partial and you want to know not just if it's used, but _what uses it_.
 
@@ -441,7 +443,7 @@ However, to get additional details about renders of this partial, you can invoke
 
 ```erb
 <!-- app/views/shared/whatever.html.erb -->
-  
+
 <%- record_cruft_tracker_view_render %>
 
 <div>I am a partial. Hear me roar.</div>
@@ -461,7 +463,7 @@ There's a lot packed into that record. Let's disect it:
 
 * `id` - This is the primary key for the view render.
 
-* `view_id` - This is the id of the view that was rendered. 
+* `view_id` - This is the id of the view that was rendered.
 
 * `render_hash` - This is the MD5 hash of the combination of the `controller`, `endpoint`, `route`, `http_method`, and the JSON version of the `render_stack`. The combination of these fields must be unique so that we can count the number of occurrences. The `render_hash` is a shortcut used by CruftTracker to easily determine if the combination of these items is unique. Basically, it's for optimization purposes and you shouldn't worry about it. :wink:
 
@@ -473,17 +475,17 @@ There's a lot packed into that record. Let's disect it:
 
 * `http_method` - This is the HTTP method used to access the `endpoint`.
 
-* `render_stack` - This is an array that is _similar_ to a backtrace, but isn't actually a backtrace. To explain, if you call `render` in a controller, Rails doesn't actually render the view at that time. Instead, it ensues the view for rendering once the controller's method has finished executing. That means that if, while the view is rendering, you call invoke Ruby's `caller_locations`, you wouldn't see the controller that triggered the render. It was decided that this was generally pretty useless. Instead, what this field stores is the hierarchy of views / partials being rendered, but none of the other related code. It can provide a hint of how a deeply nested partial is rendered. Here's an example that shows a partial being rendered from a regular view: 
+* `render_stack` - This is an array that is _similar_ to a backtrace, but isn't actually a backtrace. To explain, if you call `render` in a controller, Rails doesn't actually render the view at that time. Instead, it ensues the view for rendering once the controller's method has finished executing. That means that if, while the view is rendering, you call invoke Ruby's `caller_locations`, you wouldn't see the controller that triggered the render. It was decided that this was generally pretty useless. Instead, what this field stores is the hierarchy of views / partials being rendered, but none of the other related code. It can provide a hint of how a deeply nested partial is rendered. Here's an example that shows a partial being rendered from a regular view:
 
   ```ruby
   [
-    { "path": "/app/spec/dummy/app/views/shared/_whatever.html.erb", 
-      "label": "_app_views_shared__whatever_html_erb___436643032048620150_11500", 
-      "lineno": 1, 
-      "base_label": "_app_views_shared__whatever_html_erb___436643032048620150_11500" }, 
-    { "path": "/app/spec/dummy/app/views/main/show.html.erb", 
-      "label": "_app_views_main_show_html_erb__2350809826889573468_11260", 
-      "lineno": 6, 
+    { "path": "/app/spec/dummy/app/views/shared/_whatever.html.erb",
+      "label": "_app_views_shared__whatever_html_erb___436643032048620150_11500",
+      "lineno": 1,
+      "base_label": "_app_views_shared__whatever_html_erb___436643032048620150_11500" },
+    { "path": "/app/spec/dummy/app/views/main/show.html.erb",
+      "label": "_app_views_main_show_html_erb__2350809826889573468_11260",
+      "lineno": 6,
       "base_label": "_app_views_main_show_html_erb__2350809826889573468_11260"}
   ]
   ```
@@ -500,7 +502,7 @@ Knowing what caused a view to render is all well and good, but sometimes you mig
 
 ```erb
 <!-- app/views/shared/whatever.html.erb -->
-  
+
 <%- record_cruft_tracker_view_render(some_value) %>
 
 <div>I am a partial. Hear me roar.</div>
@@ -529,7 +531,7 @@ A word of caution: don't track ever variable. Variables are, by definition, vari
 
 ```erb
 <!-- app/views/shared/whatever.html.erb -->
-  
+
 <%- record_cruft_tracker_view_render(instance_variables) %>
 
 <div>I am a partial. Hear me roar.</div>
@@ -539,13 +541,13 @@ A word of caution: don't track ever variable. Variables are, by definition, vari
 
 ### Clean Up
 
-CruftTacker automatically cleans up after itself. ✨🧹 If you remove any configured tracking, CruftTracker will recognize this when your application starts up and mark the associated `cruft_tracker_methods` record as deleted. 
+CruftTacker automatically cleans up after itself. ✨🧹 If you remove any configured tracking, CruftTracker will recognize this when your application starts up and mark the associated `cruft_tracker_methods` record as deleted.
 
 ## Configuration
 
 Imagine a scenario where you have a method or view that is used in many places, or maybe as a result of metaprogramming. Perhaps you have some logic that is user-configurable and might lead to a tracked method being called with any number of backtraces. It's not super helpful to track all possible backtraces and it's actively bad, since it wastes space in your database and slows down queries. Besides, it's no fun drinking from the firehose.
 
-CruftTracker provides a few configurable settings to control the amount of data recorded in some of its tables. 
+CruftTracker provides a few configurable settings to control the amount of data recorded in some of its tables.
 
 | Name                                             | Default | Description                                                  |
 | ------------------------------------------------ | ------- | ------------------------------------------------------------ |
@@ -564,7 +566,7 @@ CruftTracker.init do
   config.max_backtrace_variations_per_tracked_method = 25
   config.max_view_renders_per_view = 30
   config.max_render_metadata_variations_per_view_render = 35
-  
+
   # ... your configuration for tracking methods or views ...
 end
 ```
@@ -677,7 +679,7 @@ gem build cruft_tracker.gemspec
 
 This will create a new gem file with a name like `cruft_tracker-x.y.z.gem` where `x.y.z` is the version number of the gem.
 
-To publish the new version (specify the correct version number): 
+To publish the new version (specify the correct version number):
 
 ```bash
 gem push cruft_tracker-x.y.z.gem
